@@ -576,10 +576,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## 📞 Contact
 
 **Project Maintainer**: Your Name
-- GitHub: [@yourusername](https://github.com/yourusername)
-- Email: your.email@example.com
+- GitHub: [@3lwa25](https://github.com/3lwa25)
+- Email: Mohamedalimohamed210@gmail.com
 
-**Project Link**: [https://github.com/yourusername/shop-hub](https://github.com/yourusername/shop-hub)
+**Project Link**: [https://github.com/3lwa25/Github_OnlineShopping-Repo.git](https://github.com/3lwa25/Github_OnlineShopping-Repo.git)
 
 ---
 
@@ -594,10 +594,10 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## 📊 Project Status
 
-![GitHub Issues](https://img.shields.io/github/issues/yourusername/shop-hub)
-![GitHub Pull Requests](https://img.shields.io/github/issues-pr/yourusername/shop-hub)
-![GitHub Stars](https://img.shields.io/github/stars/yourusername/shop-hub)
-![GitHub Forks](https://img.shields.io/github/forks/yourusername/shop-hub)
+![GitHub Issues](https://img.shields.io/github/issues/3lwa25/Github_OnlineShopping-Repo.git)
+![GitHub Pull Requests](https://img.shields.io/github/issues-pr/3lwa25/Github_OnlineShopping-Repo.git)
+![GitHub Stars](https://img.shields.io/github/stars/3lwa25/Github_OnlineShopping-Repo.git)
+![GitHub Forks](https://img.shields.io/github/forks/3lwa25/Github_OnlineShopping-Repo.git)
 
 ---
 
