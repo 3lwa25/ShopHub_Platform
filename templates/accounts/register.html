@@ -1,0 +1,239 @@
+{% extends 'base.html' %}
+
+{% block title %}Sign Up - Shop Hub{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6 col-lg-5">
+            <div class="card">
+                <div class="card-header text-center py-4">
+                    <h3 class="mb-0">
+                        <i class="fas fa-user-plus me-2"></i>Create Account
+                    </h3>
+                    <p class="mb-0 mt-2">Join Shop Hub today</p>
+                </div>
+                <div class="card-body p-4">
+                    <!-- Error Messages -->
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger d-flex align-items-center mb-3" role="alert">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            <div>
+                                {% for error in form.non_field_errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <form method="post" novalidate id="registerForm" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <!-- Email -->
+                        <div class="mb-3">
+                            <label for="{{ form.email.id_for_label }}" class="form-label">
+                                <i class="fas fa-envelope me-1"></i>Email Address
+                            </label>
+                            {{ form.email }}
+                            {% if form.email.errors %}
+                                <div class="alert alert-danger d-flex align-items-center mt-1 py-1" role="alert">
+                                    <i class="fas fa-exclamation-circle me-2"></i>
+                                    <small>{{ form.email.errors|first }}</small>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Username -->
+                        <div class="mb-3">
+                            <label for="{{ form.username.id_for_label }}" class="form-label">
+                                <i class="fas fa-user me-1"></i>Username
+                            </label>
+                            {{ form.username }}
+                            {% if form.username.errors %}
+                                <div class="alert alert-danger d-flex align-items-center mt-1 py-1" role="alert">
+                                    <i class="fas fa-exclamation-circle me-2"></i>
+                                    <small>{{ form.username.errors|first }}</small>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Full Name -->
+                        <div class="mb-3">
+                            <label for="{{ form.full_name.id_for_label }}" class="form-label">
+                                <i class="fas fa-id-card me-1"></i>Full Name
+                            </label>
+                            {{ form.full_name }}
+                            {% if form.full_name.errors %}
+                                <div class="alert alert-danger d-flex align-items-center mt-1 py-1" role="alert">
+                                    <i class="fas fa-exclamation-circle me-2"></i>
+                                    <small>{{ form.full_name.errors|first }}</small>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Phone -->
+                        <div class="mb-3">
+                            <label for="{{ form.phone.id_for_label }}" class="form-label">
+                                <i class="fas fa-phone me-1"></i>Phone Number (Optional)
+                            </label>
+                            {{ form.phone }}
+                            {% if form.phone.errors %}
+                                <div class="alert alert-danger d-flex align-items-center mt-1 py-1" role="alert">
+                                    <i class="fas fa-exclamation-circle me-2"></i>
+                                    <small>{{ form.phone.errors|first }}</small>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Role Selection -->
+                        <div class="mb-3">
+                            <label for="{{ form.role.id_for_label }}" class="form-label">
+                                <i class="fas fa-user-tag me-1"></i>I want to...
+                            </label>
+                            {{ form.role }}
+                            {% if form.role.errors %}
+                                <div class="alert alert-danger d-flex align-items-center mt-1 py-1" role="alert">
+                                    <i class="fas fa-exclamation-circle me-2"></i>
+                                    <small>{{ form.role.errors|first }}</small>
+                                </div>
+                            {% endif %}
+                            <small class="text-muted d-block mt-1">
+                                <i class="fas fa-info-circle me-1"></i>Choose "Buyer" to shop or "Seller" to sell products. Admin accounts are managed separately.
+                            </small>
+                        </div>
+
+                        <!-- Password with Toggle -->
+                        <div class="mb-3">
+                            <label for="{{ form.password1.id_for_label }}" class="form-label">
+                                <i class="fas fa-lock me-1"></i>Password
+                            </label>
+                            <div class="input-group">
+                                {{ form.password1 }}
+                                <button class="btn btn-outline-secondary" type="button" id="togglePassword1" aria-label="Toggle password visibility">
+                                    <i class="fas fa-eye" id="togglePassword1Icon"></i>
+                                </button>
+                            </div>
+                            {% if form.password1.errors %}
+                                <div class="alert alert-danger d-flex align-items-center mt-1 py-1" role="alert">
+                                    <i class="fas fa-exclamation-circle me-2"></i>
+                                    <small>{{ form.password1.errors|first }}</small>
+                                </div>
+                            {% endif %}
+                            {% if form.password1.help_text %}
+                                <small class="text-muted d-block mt-1">{{ form.password1.help_text }}</small>
+                            {% endif %}
+                        </div>
+
+                        <!-- Confirm Password with Toggle -->
+                        <div class="mb-4">
+                            <label for="{{ form.password2.id_for_label }}" class="form-label">
+                                <i class="fas fa-lock me-1"></i>Confirm Password
+                            </label>
+                            <div class="input-group">
+                                {{ form.password2 }}
+                                <button class="btn btn-outline-secondary" type="button" id="togglePassword2" aria-label="Toggle password visibility">
+                                    <i class="fas fa-eye" id="togglePassword2Icon"></i>
+                                </button>
+                            </div>
+                            {% if form.password2.errors %}
+                                <div class="alert alert-danger d-flex align-items-center mt-1 py-1" role="alert">
+                                    <i class="fas fa-exclamation-circle me-2"></i>
+                                    <small>{{ form.password2.errors|first }}</small>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Submit Button with Loading State -->
+                        <button type="submit" class="btn btn-primary w-100 py-2 mb-3" id="submitBtn">
+                            <span class="spinner-border spinner-border-sm d-none me-2" id="spinner" role="status" aria-hidden="true"></span>
+                            <span id="buttonText">
+                                <i class="fas fa-user-plus me-2"></i>Create Account
+                            </span>
+                        </button>
+
+                        <!-- Login Link -->
+                        <div class="text-center">
+                            <p class="mb-0">
+                                Already have an account?
+                                <a href="{% url 'accounts:login' %}" class="text-decoration-none">
+                                    Login here
+                                </a>
+                            </p>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Password Visibility Toggle
+    document.addEventListener('DOMContentLoaded', function() {
+        // Toggle for Password 1
+        const togglePassword1 = document.getElementById('togglePassword1');
+        const passwordInput1 = document.getElementById('id_password1');
+        const toggleIcon1 = document.getElementById('togglePassword1Icon');
+
+        if (togglePassword1 && passwordInput1) {
+            togglePassword1.addEventListener('click', function() {
+                const type = passwordInput1.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput1.setAttribute('type', type);
+                
+                // Toggle icon
+                if (type === 'password') {
+                    toggleIcon1.classList.remove('fa-eye-slash');
+                    toggleIcon1.classList.add('fa-eye');
+                } else {
+                    toggleIcon1.classList.remove('fa-eye');
+                    toggleIcon1.classList.add('fa-eye-slash');
+                }
+            });
+        }
+
+        // Toggle for Password 2
+        const togglePassword2 = document.getElementById('togglePassword2');
+        const passwordInput2 = document.getElementById('id_password2');
+        const toggleIcon2 = document.getElementById('togglePassword2Icon');
+
+        if (togglePassword2 && passwordInput2) {
+            togglePassword2.addEventListener('click', function() {
+                const type = passwordInput2.getAttribute('type') === 'password' ? 'text' : 'password';
+                passwordInput2.setAttribute('type', type);
+                
+                // Toggle icon
+                if (type === 'password') {
+                    toggleIcon2.classList.remove('fa-eye-slash');
+                    toggleIcon2.classList.add('fa-eye');
+                } else {
+                    toggleIcon2.classList.remove('fa-eye');
+                    toggleIcon2.classList.add('fa-eye-slash');
+                }
+            });
+        }
+
+        // Form Loading State
+        const registerForm = document.getElementById('registerForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const spinner = document.getElementById('spinner');
+        const buttonText = document.getElementById('buttonText');
+
+        if (registerForm && submitBtn) {
+            registerForm.addEventListener('submit', function() {
+                // Disable submit button
+                submitBtn.disabled = true;
+                
+                // Show spinner
+                if (spinner) spinner.classList.remove('d-none');
+                
+                // Update button text
+                if (buttonText) {
+                    buttonText.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Creating Account...';
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}

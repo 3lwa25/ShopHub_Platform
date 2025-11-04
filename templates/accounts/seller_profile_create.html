@@ -1,0 +1,218 @@
+{% extends 'base.html' %}
+
+{% block title %}Create Seller Profile - Shop Hub{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0"><i class="fas fa-store me-2"></i>Create Your Seller Profile</h4>
+                    <p class="mb-0 mt-2">Complete your business information to start selling</p>
+                </div>
+                <div class="card-body">
+                    <!-- Error Messages -->
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger d-flex align-items-center mb-3" role="alert">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            <div>
+                                {% for error in form.non_field_errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <form method="post" enctype="multipart/form-data" novalidate id="sellerProfileForm">
+                        {% csrf_token %}
+                        
+                        <h5 class="mb-3">Business Information</h5>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.business_name.id_for_label }}" class="form-label">Business Name *</label>
+                            {{ form.business_name }}
+                            {% if form.business_name.errors %}
+                                <div class="alert alert-danger d-flex align-items-center mt-1 py-1" role="alert">
+                                    <i class="fas fa-exclamation-circle me-2"></i>
+                                    <small>{{ form.business_name.errors|first }}</small>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.business_description.id_for_label }}" class="form-label">Business Description</label>
+                            {{ form.business_description }}
+                            {% if form.business_description.errors %}
+                                <div class="alert alert-danger d-flex align-items-center mt-1 py-1" role="alert">
+                                    <i class="fas fa-exclamation-circle me-2"></i>
+                                    <small>{{ form.business_description.errors|first }}</small>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.logo.id_for_label }}" class="form-label">Business Logo</label>
+                            {{ form.logo }}
+                            {% if form.logo.errors %}
+                                <div class="alert alert-danger d-flex align-items-center mt-1 py-1" role="alert">
+                                    <i class="fas fa-exclamation-circle me-2"></i>
+                                    <small>{{ form.logo.errors|first }}</small>
+                                </div>
+                            {% endif %}
+                            <!-- Logo Preview -->
+                            <div id="logoPreview" class="mt-3" style="display: none;">
+                                <img id="previewLogoImg" src="#" alt="Logo Preview" class="img-thumbnail" style="max-width: 200px; max-height: 200px; object-fit: contain;">
+                            </div>
+                        </div>
+
+                        <hr class="my-4">
+
+                        <h5 class="mb-3">Business Address</h5>
+
+                        <div class="mb-3">
+                            <label for="{{ form.address.id_for_label }}" class="form-label">Address</label>
+                            {{ form.address }}
+                            {% if form.address.errors %}
+                                <div class="alert alert-danger d-flex align-items-center mt-1 py-1" role="alert">
+                                    <i class="fas fa-exclamation-circle me-2"></i>
+                                    <small>{{ form.address.errors|first }}</small>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.city.id_for_label }}" class="form-label">City</label>
+                                {{ form.city }}
+                                {% if form.city.errors %}
+                                    <div class="alert alert-danger d-flex align-items-center mt-1 py-1" role="alert">
+                                        <i class="fas fa-exclamation-circle me-2"></i>
+                                        <small>{{ form.city.errors|first }}</small>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.country.id_for_label }}" class="form-label">Country</label>
+                                {{ form.country }}
+                                {% if form.country.errors %}
+                                    <div class="alert alert-danger d-flex align-items-center mt-1 py-1" role="alert">
+                                        <i class="fas fa-exclamation-circle me-2"></i>
+                                        <small>{{ form.country.errors|first }}</small>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="{{ form.postal_code.id_for_label }}" class="form-label">Postal Code</label>
+                            {{ form.postal_code }}
+                            {% if form.postal_code.errors %}
+                                <div class="alert alert-danger d-flex align-items-center mt-1 py-1" role="alert">
+                                    <i class="fas fa-exclamation-circle me-2"></i>
+                                    <small>{{ form.postal_code.errors|first }}</small>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <hr class="my-4">
+
+                        <h5 class="mb-3">Social Media Links</h5>
+
+                        <div class="mb-3">
+                            <label for="{{ form.website.id_for_label }}" class="form-label">Website</label>
+                            {{ form.website }}
+                            {% if form.website.errors %}
+                                <div class="alert alert-danger d-flex align-items-center mt-1 py-1" role="alert">
+                                    <i class="fas fa-exclamation-circle me-2"></i>
+                                    <small>{{ form.website.errors|first }}</small>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.facebook.id_for_label }}" class="form-label">Facebook</label>
+                                {{ form.facebook }}
+                                {% if form.facebook.errors %}
+                                    <div class="alert alert-danger d-flex align-items-center mt-1 py-1" role="alert">
+                                        <i class="fas fa-exclamation-circle me-2"></i>
+                                        <small>{{ form.facebook.errors|first }}</small>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.instagram.id_for_label }}" class="form-label">Instagram</label>
+                                {{ form.instagram }}
+                                {% if form.instagram.errors %}
+                                    <div class="alert alert-danger d-flex align-items-center mt-1 py-1" role="alert">
+                                        <i class="fas fa-exclamation-circle me-2"></i>
+                                        <small>{{ form.instagram.errors|first }}</small>
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" id="submitBtn">
+                            <span class="spinner-border spinner-border-sm d-none me-2" id="spinner" role="status" aria-hidden="true"></span>
+                            <span id="buttonText">
+                                <i class="fas fa-save me-2"></i>Create Seller Profile
+                            </span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Logo Preview
+    document.addEventListener('DOMContentLoaded', function() {
+        const logoInput = document.getElementById('id_logo');
+        const logoPreview = document.getElementById('logoPreview');
+        const previewLogoImg = document.getElementById('previewLogoImg');
+
+        if (logoInput && logoPreview && previewLogoImg) {
+            logoInput.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        previewLogoImg.src = e.target.result;
+                        logoPreview.style.display = 'block';
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    logoPreview.style.display = 'none';
+                }
+            });
+        }
+
+        // Form Loading State
+        const sellerProfileForm = document.getElementById('sellerProfileForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const spinner = document.getElementById('spinner');
+        const buttonText = document.getElementById('buttonText');
+
+        if (sellerProfileForm && submitBtn) {
+            sellerProfileForm.addEventListener('submit', function() {
+                // Disable submit button
+                submitBtn.disabled = true;
+                
+                // Show spinner
+                if (spinner) spinner.classList.remove('d-none');
+                
+                // Update button text
+                if (buttonText) {
+                    buttonText.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Creating...';
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}
