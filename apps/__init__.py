@@ -1,0 +1,4 @@
+"""
+Shop Hub Django Applications
+"""
+
