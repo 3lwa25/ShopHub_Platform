@@ -19,6 +19,13 @@ class VTOAsset(models.Model):
         ('mask', 'Face Mask'),
         ('jewelry', 'Jewelry'),
         ('accessory', 'Accessory'),
+        ('room', 'Room/Placement'),  # For home decor, furniture, kitchen items in rooms
+    ]
+    
+    PLACEMENT_MODES = [
+        ('face', 'Face Detection'),  # Requires face in image
+        ('room', 'Room Placement'),  # For placing objects in room images
+        ('auto', 'Auto-Detect'),     # Automatically detect mode
     ]
     
     # Product relationship
@@ -54,6 +61,14 @@ class VTOAsset(models.Model):
     scale_factor = models.FloatField(
         default=1.0,
         help_text=_('Scale factor for overlay size')
+    )
+    
+    # Placement mode
+    placement_mode = models.CharField(
+        max_length=20,
+        choices=PLACEMENT_MODES,
+        default='auto',
+        help_text=_('VTO placement mode: face detection or room placement')
     )
     
     # Additional metadata
