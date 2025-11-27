@@ -1,0 +1,207 @@
+[
+  {
+    "id": 1,
+    "email": "john.smith@example.com",
+    "username": "john_smith",
+    "password_hash": "hashed_password_here",
+    "full_name": "John Smith",
+    "role": "seller",
+    "phone": "+1-555-0101",
+    "verified": true,
+    "avatar": "/media/avatars/user_001.jpg",
+    "rewards_balance": 0,
+    "seller_profile": {
+      "business_name": "Fashion Store",
+      "business_description": "Quality fashion and accessories for everyone",
+      "business_address": "123 Main Street, New York, NY 10001",
+      "verified_seller": true,
+      "total_sales": 15678,
+      "rating": 4.7
+    },
+    "date_joined": "2023-06-15T10:00:00Z"
+  },
+  {
+    "id": 2,
+    "email": "sarah.tech@example.com",
+    "username": "sarah_tech",
+    "password_hash": "hashed_password_here",
+    "full_name": "Sarah Johnson",
+    "role": "seller",
+    "phone": "+1-555-0102",
+    "verified": true,
+    "avatar": "/media/avatars/user_002.jpg",
+    "rewards_balance": 0,
+    "seller_profile": {
+      "business_name": "Tech Hub",
+      "business_description": "Latest electronics and tech gadgets",
+      "business_address": "456 Tech Avenue, San Francisco, CA 94102",
+      "verified_seller": true,
+      "total_sales": 28934,
+      "rating": 4.9
+    },
+    "date_joined": "2023-05-20T09:30:00Z"
+  },
+  {
+    "id": 3,
+    "email": "home.essentials@example.com",
+    "username": "home_essentials",
+    "password_hash": "hashed_password_here",
+    "full_name": "Michael Brown",
+    "role": "seller",
+    "phone": "+1-555-0103",
+    "verified": true,
+    "avatar": "/media/avatars/user_003.jpg",
+    "rewards_balance": 0,
+    "seller_profile": {
+      "business_name": "Home Essentials",
+      "business_description": "Beautiful home decor and furniture",
+      "business_address": "789 Home Lane, Austin, TX 73301",
+      "verified_seller": true,
+      "total_sales": 12456,
+      "rating": 4.6
+    },
+    "date_joined": "2023-07-10T14:00:00Z"
+  },
+  {
+    "id": 4,
+    "email": "beauty.boutique@example.com",
+    "username": "beauty_boutique",
+    "password_hash": "hashed_password_here",
+    "full_name": "Emily Davis",
+    "role": "seller",
+    "phone": "+1-555-0104",
+    "verified": true,
+    "avatar": "/media/avatars/user_004.jpg",
+    "rewards_balance": 0,
+    "seller_profile": {
+      "business_name": "Beauty Boutique",
+      "business_description": "Premium skincare and beauty products",
+      "business_address": "321 Beauty Boulevard, Los Angeles, CA 90001",
+      "verified_seller": true,
+      "total_sales": 34567,
+      "rating": 4.8
+    },
+    "date_joined": "2023-04-05T11:15:00Z"
+  },
+  {
+    "id": 5,
+    "email": "alex.buyer@example.com",
+    "username": "alex_m",
+    "password_hash": "hashed_password_here",
+    "full_name": "Alex Martinez",
+    "role": "buyer",
+    "phone": "+1-555-0201",
+    "verified": true,
+    "avatar": "/media/avatars/user_005.jpg",
+    "rewards_balance": 450,
+    "shipping_address": {
+      "street": "100 Oak Street, Apt 4B",
+      "city": "Boston",
+      "state": "MA",
+      "zip": "02101",
+      "country": "USA"
+    },
+    "date_joined": "2023-08-12T16:30:00Z"
+  },
+  {
+    "id": 6,
+    "email": "jessica.wilson@example.com",
+    "username": "jessica_w",
+    "password_hash": "hashed_password_here",
+    "full_name": "Jessica Wilson",
+    "role": "buyer",
+    "phone": "+1-555-0202",
+    "verified": true,
+    "avatar": "/media/avatars/user_006.jpg",
+    "rewards_balance": 820,
+    "shipping_address": {
+      "street": "250 Pine Avenue",
+      "city": "Seattle",
+      "state": "WA",
+      "zip": "98101",
+      "country": "USA"
+    },
+    "date_joined": "2023-09-01T10:00:00Z"
+  },
+  {
+    "id": 7,
+    "email": "david.thompson@example.com",
+    "username": "david_t",
+    "password_hash": "hashed_password_here",
+    "full_name": "David Thompson",
+    "role": "buyer",
+    "phone": "+1-555-0203",
+    "verified": true,
+    "avatar": "/media/avatars/user_007.jpg",
+    "rewards_balance": 325,
+    "shipping_address": {
+      "street": "789 Maple Drive",
+      "city": "Chicago",
+      "state": "IL",
+      "zip": "60601",
+      "country": "USA"
+    },
+    "date_joined": "2023-10-15T14:20:00Z"
+  },
+  {
+    "id": 8,
+    "email": "emma.garcia@example.com",
+    "username": "emma_g",
+    "password_hash": "hashed_password_here",
+    "full_name": "Emma Garcia",
+    "role": "buyer",
+    "phone": "+1-555-0204",
+    "verified": true,
+    "avatar": "/media/avatars/user_008.jpg",
+    "rewards_balance": 1250,
+    "shipping_address": {
+      "street": "456 Cedar Lane",
+      "city": "Miami",
+      "state": "FL",
+      "zip": "33101",
+      "country": "USA"
+    },
+    "date_joined": "2023-07-22T09:45:00Z"
+  },
+  {
+    "id": 9,
+    "email": "ryan.anderson@example.com",
+    "username": "ryan_a",
+    "password_hash": "hashed_password_here",
+    "full_name": "Ryan Anderson",
+    "role": "buyer",
+    "phone": "+1-555-0205",
+    "verified": true,
+    "avatar": "/media/avatars/user_009.jpg",
+    "rewards_balance": 95,
+    "shipping_address": {
+      "street": "123 Elm Street",
+      "city": "Denver",
+      "state": "CO",
+      "zip": "80201",
+      "country": "USA"
+    },
+    "date_joined": "2024-01-05T13:00:00Z"
+  },
+  {
+    "id": 10,
+    "email": "olivia.taylor@example.com",
+    "username": "olivia_t",
+    "password_hash": "hashed_password_here",
+    "full_name": "Olivia Taylor",
+    "role": "buyer",
+    "phone": "+1-555-0206",
+    "verified": true,
+    "avatar": "/media/avatars/user_010.jpg",
+    "rewards_balance": 675,
+    "shipping_address": {
+      "street": "890 Birch Road",
+      "city": "Portland",
+      "state": "OR",
+      "zip": "97201",
+      "country": "USA"
+    },
+    "date_joined": "2023-11-18T11:30:00Z"
+  }
+]
+

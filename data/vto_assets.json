@@ -1,0 +1,111 @@
+[
+  {
+    "id": 1,
+    "product_id": 3,
+    "product_name": "Classic Aviator Sunglasses",
+    "asset_type": "glasses",
+    "overlay_image": "/static/vto/overlays/sunglasses_aviator_001.png",
+    "thumbnail": "/static/vto/thumbnails/sunglasses_aviator_001_thumb.jpg",
+    "anchor_points": {
+      "type": "glasses",
+      "left_eye": {"x": 0.35, "y": 0.40},
+      "right_eye": {"x": 0.65, "y": 0.40},
+      "nose_bridge": {"x": 0.50, "y": 0.45}
+    },
+    "scale_factor": 1.2,
+    "rotation_offset": 0,
+    "description": "Classic aviator style overlay with adjustable positioning",
+    "instructions": "Position the overlay so that the frame bridge aligns with your nose bridge"
+  },
+  {
+    "id": 2,
+    "product_id": 6,
+    "product_name": "Classic Baseball Cap",
+    "asset_type": "hat",
+    "overlay_image": "/static/vto/overlays/cap_baseball_001.png",
+    "thumbnail": "/static/vto/thumbnails/cap_baseball_001_thumb.jpg",
+    "anchor_points": {
+      "type": "hat",
+      "forehead_center": {"x": 0.50, "y": 0.25},
+      "left_temple": {"x": 0.30, "y": 0.30},
+      "right_temple": {"x": 0.70, "y": 0.30}
+    },
+    "scale_factor": 1.15,
+    "rotation_offset": -5,
+    "description": "Baseball cap overlay with slight forward tilt",
+    "instructions": "Center the cap on your forehead for best results"
+  },
+  {
+    "id": 3,
+    "product_id": 10,
+    "product_name": "Round Frame Fashion Glasses",
+    "asset_type": "glasses",
+    "overlay_image": "/static/vto/overlays/glasses_round_002.png",
+    "thumbnail": "/static/vto/thumbnails/glasses_round_002_thumb.jpg",
+    "anchor_points": {
+      "type": "glasses",
+      "left_eye": {"x": 0.37, "y": 0.42},
+      "right_eye": {"x": 0.63, "y": 0.42},
+      "nose_bridge": {"x": 0.50, "y": 0.47}
+    },
+    "scale_factor": 1.0,
+    "rotation_offset": 0,
+    "description": "Round frame glasses with clear lens overlay",
+    "instructions": "Align the center of each lens with your eyes"
+  },
+  {
+    "id": 4,
+    "product_id": null,
+    "product_name": "Cat Eye Sunglasses",
+    "asset_type": "glasses",
+    "overlay_image": "/static/vto/overlays/sunglasses_cateye_003.png",
+    "thumbnail": "/static/vto/thumbnails/sunglasses_cateye_003_thumb.jpg",
+    "anchor_points": {
+      "type": "glasses",
+      "left_eye": {"x": 0.36, "y": 0.41},
+      "right_eye": {"x": 0.64, "y": 0.41},
+      "nose_bridge": {"x": 0.50, "y": 0.46}
+    },
+    "scale_factor": 1.1,
+    "rotation_offset": 2,
+    "description": "Trendy cat eye frame overlay",
+    "instructions": "Position so the upswept corners are visible near temples"
+  },
+  {
+    "id": 5,
+    "product_id": null,
+    "product_name": "Beanie Hat",
+    "asset_type": "hat",
+    "overlay_image": "/static/vto/overlays/hat_beanie_004.png",
+    "thumbnail": "/static/vto/thumbnails/hat_beanie_004_thumb.jpg",
+    "anchor_points": {
+      "type": "hat",
+      "forehead_center": {"x": 0.50, "y": 0.22},
+      "left_temple": {"x": 0.28, "y": 0.28},
+      "right_temple": {"x": 0.72, "y": 0.28}
+    },
+    "scale_factor": 1.25,
+    "rotation_offset": 0,
+    "description": "Casual beanie hat overlay",
+    "instructions": "Position at the top of forehead, covering hairline"
+  },
+  {
+    "id": 6,
+    "product_id": null,
+    "product_name": "Wayfarer Sunglasses",
+    "asset_type": "glasses",
+    "overlay_image": "/static/vto/overlays/sunglasses_wayfarer_005.png",
+    "thumbnail": "/static/vto/thumbnails/sunglasses_wayfarer_005_thumb.jpg",
+    "anchor_points": {
+      "type": "glasses",
+      "left_eye": {"x": 0.36, "y": 0.42},
+      "right_eye": {"x": 0.64, "y": 0.42},
+      "nose_bridge": {"x": 0.50, "y": 0.47}
+    },
+    "scale_factor": 1.15,
+    "rotation_offset": 0,
+    "description": "Classic wayfarer style frame overlay",
+    "instructions": "Center on face with bridge aligned to nose"
+  }
+]
+

@@ -1,0 +1,213 @@
+[
+  {
+    "id": 1,
+    "user_id": 5,
+    "product_id": 1,
+    "event_type": "view",
+    "timestamp": "2024-03-01T10:15:30Z",
+    "session_id": "sess_abc123"
+  },
+  {
+    "id": 2,
+    "user_id": 5,
+    "product_id": 1,
+    "event_type": "add_to_cart",
+    "timestamp": "2024-03-01T10:18:45Z",
+    "session_id": "sess_abc123"
+  },
+  {
+    "id": 3,
+    "user_id": 5,
+    "product_id": 1,
+    "event_type": "purchase",
+    "timestamp": "2024-03-01T10:25:00Z",
+    "session_id": "sess_abc123",
+    "order_id": 1,
+    "price": 29.99
+  },
+  {
+    "id": 4,
+    "user_id": 6,
+    "product_id": 3,
+    "event_type": "view",
+    "timestamp": "2024-03-02T14:20:15Z",
+    "session_id": "sess_def456"
+  },
+  {
+    "id": 5,
+    "user_id": 6,
+    "product_id": 3,
+    "event_type": "tryon",
+    "timestamp": "2024-03-02T14:22:30Z",
+    "session_id": "sess_def456"
+  },
+  {
+    "id": 6,
+    "user_id": 6,
+    "product_id": 3,
+    "event_type": "add_to_cart",
+    "timestamp": "2024-03-02T14:25:00Z",
+    "session_id": "sess_def456"
+  },
+  {
+    "id": 7,
+    "user_id": 6,
+    "product_id": 3,
+    "event_type": "purchase",
+    "timestamp": "2024-03-02T14:30:45Z",
+    "session_id": "sess_def456",
+    "order_id": 2,
+    "price": 89.99
+  },
+  {
+    "id": 8,
+    "user_id": 7,
+    "product_id": 2,
+    "event_type": "view",
+    "timestamp": "2024-03-03T09:10:00Z",
+    "session_id": "sess_ghi789"
+  },
+  {
+    "id": 9,
+    "user_id": 7,
+    "product_id": 7,
+    "event_type": "view",
+    "timestamp": "2024-03-03T09:15:20Z",
+    "session_id": "sess_ghi789"
+  },
+  {
+    "id": 10,
+    "user_id": 7,
+    "product_id": 7,
+    "event_type": "add_to_cart",
+    "timestamp": "2024-03-03T09:18:30Z",
+    "session_id": "sess_ghi789"
+  },
+  {
+    "id": 11,
+    "user_id": 7,
+    "product_id": 7,
+    "event_type": "purchase",
+    "timestamp": "2024-03-03T09:25:00Z",
+    "session_id": "sess_ghi789",
+    "order_id": 3,
+    "price": 299.99
+  },
+  {
+    "id": 12,
+    "user_id": 8,
+    "product_id": 5,
+    "event_type": "view",
+    "timestamp": "2024-03-04T16:30:00Z",
+    "session_id": "sess_jkl012"
+  },
+  {
+    "id": 13,
+    "user_id": 8,
+    "product_id": 5,
+    "event_type": "add_to_cart",
+    "timestamp": "2024-03-04T16:32:15Z",
+    "session_id": "sess_jkl012"
+  },
+  {
+    "id": 14,
+    "user_id": 8,
+    "product_id": 4,
+    "event_type": "view",
+    "timestamp": "2024-03-04T16:35:00Z",
+    "session_id": "sess_jkl012"
+  },
+  {
+    "id": 15,
+    "user_id": 8,
+    "product_id": 5,
+    "event_type": "purchase",
+    "timestamp": "2024-03-04T16:40:30Z",
+    "session_id": "sess_jkl012",
+    "order_id": 4,
+    "price": 24.99
+  },
+  {
+    "id": 16,
+    "user_id": 9,
+    "product_id": 6,
+    "event_type": "view",
+    "timestamp": "2024-03-05T11:00:00Z",
+    "session_id": "sess_mno345"
+  },
+  {
+    "id": 17,
+    "user_id": 9,
+    "product_id": 6,
+    "event_type": "tryon",
+    "timestamp": "2024-03-05T11:02:30Z",
+    "session_id": "sess_mno345"
+  },
+  {
+    "id": 18,
+    "user_id": 9,
+    "product_id": 6,
+    "event_type": "add_to_cart",
+    "timestamp": "2024-03-05T11:05:00Z",
+    "session_id": "sess_mno345"
+  },
+  {
+    "id": 19,
+    "user_id": 10,
+    "product_id": 8,
+    "event_type": "view",
+    "timestamp": "2024-03-06T13:15:00Z",
+    "session_id": "sess_pqr678"
+  },
+  {
+    "id": 20,
+    "user_id": 10,
+    "product_id": 8,
+    "event_type": "add_to_cart",
+    "timestamp": "2024-03-06T13:20:00Z",
+    "session_id": "sess_pqr678"
+  },
+  {
+    "id": 21,
+    "user_id": 10,
+    "product_id": 8,
+    "event_type": "purchase",
+    "timestamp": "2024-03-06T13:28:15Z",
+    "session_id": "sess_pqr678",
+    "order_id": 5,
+    "price": 59.99
+  },
+  {
+    "id": 22,
+    "user_id": 5,
+    "product_id": 10,
+    "event_type": "view",
+    "timestamp": "2024-03-07T15:45:00Z",
+    "session_id": "sess_stu901"
+  },
+  {
+    "id": 23,
+    "user_id": 5,
+    "product_id": 10,
+    "event_type": "tryon",
+    "timestamp": "2024-03-07T15:47:30Z",
+    "session_id": "sess_stu901"
+  },
+  {
+    "id": 24,
+    "user_id": 5,
+    "product_id": 10,
+    "event_type": "add_to_cart",
+    "timestamp": "2024-03-07T15:50:00Z",
+    "session_id": "sess_stu901"
+  },
+  {
+    "id": 25,
+    "user_id": 6,
+    "product_id": 9,
+    "event_type": "view",
+    "timestamp": "2024-03-08T10:30:00Z",
+    "session_id": "sess_vwx234"
+  }
+]
+
