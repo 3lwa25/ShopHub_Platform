@@ -236,7 +236,7 @@ class ProductCatalogSearch:
         if cls._wants_comparison(query_lower) and len(snippets) < limit:
             snippets.extend(cls.comparison_snippets(query_lower, limit=limit - len(snippets)))
 
-        return snippets
+        return snippets[:limit]
 
     @staticmethod
     def _category_hint(query: str) -> str | None:

@@ -2,7 +2,7 @@
 Django Admin Configuration for AI Chatbot App
 """
 from django.contrib import admin
-from .models import ChatSession, ChatMessage, ChatFeedback
+from .models import ChatSession, ChatMessage, ChatFeedback, ProductKnowledge
 
 
 class ChatMessageInline(admin.TabularInline):
@@ -44,4 +44,13 @@ class ChatFeedbackAdmin(admin.ModelAdmin):
     list_display = ['message', 'feedback_type', 'created_at']
     list_filter = ['feedback_type', 'created_at']
     search_fields = ['message__content', 'comment']
+
+
+@admin.register(ProductKnowledge)
+class ProductKnowledgeAdmin(admin.ModelAdmin):
+    list_display = ['title', 'category', 'average_rating', 'last_updated', 'source']
+    search_fields = ['title', 'category', 'description', 'external_id']
+    list_filter = ['category', 'source']
+    readonly_fields = ['last_updated']
+    ordering = ['-last_updated']
 

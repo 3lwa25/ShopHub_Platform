@@ -6,6 +6,9 @@ from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.conf import settings
 import uuid
+from decimal import Decimal
+
+from apps.products.models import Product
 
 
 class ChatSession(models.Model):
@@ -256,4 +259,59 @@ class ChatFeedback(models.Model):
     
     def __str__(self):
         return f"Feedback for message {self.message.id} - {self.feedback_type}"
+
+
+class ProductKnowledge(models.Model):
+    """
+    Lightweight search index for product/domain knowledge used by the AI chatbot.
+    Populated via management command from curated datasets (meta + reviews).
+    """
+
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='knowledge_entries',
+        help_text=_('Optional link to an internal catalog product'),
+    )
+    external_id = models.CharField(
+        max_length=100,
+        unique=True,
+        help_text=_('External identifier (e.g., ASIN) used in the dataset'),
+    )
+    title = models.CharField(max_length=255, db_index=True)
+    category = models.CharField(max_length=255, blank=True, db_index=True)
+    description = models.TextField(blank=True)
+    highlights = models.JSONField(default=list, blank=True, help_text=_('Key bullet points/features'))
+    review_snippets = models.JSONField(default=list, blank=True, help_text=_('Short review quotes'))
+    average_rating = models.DecimalField(
+        max_digits=3,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text=_('Average rating from dataset (0-5)'),
+    )
+    price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        null=True,
+        blank=True,
+        help_text=_('Price information if available'),
+    )
+    source = models.CharField(max_length=255, blank=True, help_text=_('Dataset file this record came from'))
+    metadata = models.JSONField(default=dict, blank=True)
+    last_updated = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'chatbot_product_knowledge'
+        verbose_name = _('Product Knowledge Entry')
+        verbose_name_plural = _('Product Knowledge Entries')
+        indexes = [
+            models.Index(fields=['category']),
+            models.Index(fields=['title']),
+        ]
+
+    def __str__(self):
+        return self.title[:80]
 
