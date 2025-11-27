@@ -57,6 +57,11 @@ Shop Hub addresses these challenges through:
 
 ---
 
+## ✅ Progress Snapshot
+- **Phases completed:** 15 / 20 (core commerce features + AI assistants + admin/monitoring).
+- **Upcoming work:** REST API enablement, security hardening, automated testing, deployment polish.
+- **Latest enhancements:** database-grounded chatbot responses, seller-driven payment approval & invoice PDFs, refreshed documentation set.
+
 ## ✨ Features
 
 ### 🛒 For Buyers
@@ -83,7 +88,7 @@ Shop Hub addresses these challenges through:
   - Intuitive shopping cart
   - Wishlist functionality
   - Order tracking
-  - Order history with detailed views
+  - Order history with detailed views & downloadable branded invoices (PDF)
 
 - **🎁 Rewards Program**
   - Earn points on every purchase
@@ -251,6 +256,12 @@ shop-hub/
 └── LICENSE                   # MIT License
 ```
 
+## 📚 Documentation & Guides
+- **Phase tracker:** `docs/ALL_PHASES_OVERVIEW.md` (15/20 phases complete, next up REST API & security hardening).
+- **Role handbooks:** `docs/guides/BUYER_GUIDE.md`, `SELLER_GUIDE.md`, `ADMIN_GUIDE.md`.
+- **Setup & study aids:** `docs/guides/INSTALLATION_GUIDE.md` and `docs/guides/STUDY_GUIDE.md`.
+- **End-to-end story:** `docs/guides/PROJECT_FULL_GUIDE.md`.
+
 ---
 
 ## 🚀 Installation
@@ -408,7 +419,8 @@ EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 3. **Add Products**: List products with images and details
 4. **Manage Inventory**: Track stock levels
 5. **View Orders**: Process customer orders
-6. **Analytics**: Monitor sales performance
+6. **Approve Payments & Invoices**: Confirm funds, trigger branded PDFs, keep buyers updated
+7. **Analytics**: Monitor sales performance
 
 ---
 
@@ -422,6 +434,7 @@ EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
 - Personalized recommendations
 - Shopping assistance
 - FAQ handling
+- Database-grounded answers (live catalog, schema summaries, curated knowledge base)
 
 **Usage**:
 ```javascript
