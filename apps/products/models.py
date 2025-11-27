@@ -260,6 +260,25 @@ class Product(models.Model):
         """Check if product is in stock"""
         return self.stock > 0
     
+    @property
+    def is_best_seller(self):
+        """Check if product is a best seller (top 10 in category in last 30 days)"""
+        from datetime import timedelta
+        from django.utils import timezone
+        from django.db.models import Count
+        
+        thirty_days_ago = timezone.now() - timedelta(days=30)
+        best_sellers = Product.objects.filter(
+            category=self.category,
+            status='active',
+            order_items__order__status='DELIVERED',
+            order_items__order__created_at__gte=thirty_days_ago
+        ).annotate(
+            total_sold=Count('order_items')
+        ).order_by('-total_sold')[:10]
+        
+        return self in best_sellers
+    
     def update_rating(self):
         """
         Recalculate average rating from reviews.

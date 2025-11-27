@@ -83,7 +83,14 @@ def product_list_view(request):
     import random
     sort_by = request.GET.get('sort_by', 'shuffle')  # Default to shuffle
     valid_sorts = ['-created_at', 'price', '-price', '-rating', '-review_count', 'shuffle', 'most_recent']
-    if sort_by in valid_sorts:
+    
+    # If search query exists, prioritize by relevance
+    if search_query and sort_by not in ['price', '-price']:
+        products = products.order_by('relevance', '-created_at')
+        paginator = Paginator(products, 24)
+        page_number = request.GET.get('page', 1)
+        page_obj = paginator.get_page(page_number)
+    elif sort_by in valid_sorts:
         if sort_by == 'shuffle':
             # Shuffle products randomly
             products_list = list(products)
@@ -109,7 +116,7 @@ def product_list_view(request):
         # Default shuffle if invalid sort
         products_list = list(products)
         random.shuffle(products_list)
-        paginator = Paginator(products_list, 20)
+        paginator = Paginator(products_list, 24)
         page_number = request.GET.get('page', 1)
         try:
             page_obj = paginator.get_page(page_number)
@@ -166,12 +173,12 @@ def product_detail_view(request, slug):
     frequently_bought_together = []
     if order_ids:
         frequently_bought_together = Product.objects.filter(
-            orderitem__order_id__in=order_ids,
+            order_items__order_id__in=order_ids,
             status='active'
         ).exclude(
             id=product.id
         ).annotate(
-            purchase_count=Count('orderitem')
+            purchase_count=Count('order_items')
         ).order_by('-purchase_count').select_related('category').prefetch_related('images')[:4]
     
     # If no frequently bought together, show similar products

@@ -3,7 +3,16 @@ Django Admin Configuration for Products App
 """
 from django.contrib import admin
 from django.utils.html import format_html
+from django.utils.translation import gettext_lazy as _
+
+from apps.common.notifications import notify_product_status
 from .models import Category, Product, ProductVariant, ProductImage
+
+# Import search admin (models are auto-registered via @admin.register decorator)
+try:
+    from . import search_admin  # This will register the models
+except ImportError:
+    pass
 
 
 @admin.register(Category)
@@ -40,6 +49,7 @@ class ProductAdmin(admin.ModelAdmin):
     readonly_fields = ['rating', 'review_count', 'created_at', 'updated_at']
     inlines = [ProductImageInline, ProductVariantInline]
     ordering = ['-created_at']
+    actions = ['make_active', 'make_inactive', 'make_featured', 'remove_featured', 'enable_vto', 'disable_vto']
     
     fieldsets = (
         ('Basic Information', {
@@ -74,6 +84,80 @@ class ProductAdmin(admin.ModelAdmin):
             'classes': ('collapse',)
         }),
     )
+    
+    def make_active(self, request, queryset):
+        updated = 0
+        for product in queryset.select_related('seller__user'):
+            if product.status != 'active':
+                product.status = 'active'
+                product.save(update_fields=['status', 'updated_at'])
+                notify_product_status(
+                    product,
+                    is_active=True,
+                    is_featured=product.is_featured,
+                    reason=_('Your product has been approved and published in the storefront.')
+                )
+                updated += 1
+        self.message_user(request, f'{updated} products marked as active.')
+    make_active.short_description = 'Mark selected products as active'
+    
+    def make_inactive(self, request, queryset):
+        updated = 0
+        for product in queryset.select_related('seller__user'):
+            if product.status != 'inactive':
+                product.status = 'inactive'
+                product.save(update_fields=['status', 'updated_at'])
+                notify_product_status(
+                    product,
+                    is_active=False,
+                    is_featured=product.is_featured,
+                    reason=_('Your product has been deactivated by an administrator. Please review the listing and contact support if needed.')
+                )
+                updated += 1
+        self.message_user(request, f'{updated} products marked as inactive.')
+    make_inactive.short_description = 'Mark selected products as inactive'
+    
+    def make_featured(self, request, queryset):
+        updated = 0
+        for product in queryset.select_related('seller__user'):
+            if not product.is_featured:
+                product.is_featured = True
+                product.save(update_fields=['is_featured', 'updated_at'])
+                notify_product_status(
+                    product,
+                    is_active=(product.status == 'active'),
+                    is_featured=True,
+                    reason=_('Great news! Your product has been highlighted as a featured item.')
+                )
+                updated += 1
+        self.message_user(request, f'{updated} products marked as featured.')
+    make_featured.short_description = 'Mark selected products as featured'
+    
+    def remove_featured(self, request, queryset):
+        updated = 0
+        for product in queryset.select_related('seller__user'):
+            if product.is_featured:
+                product.is_featured = False
+                product.save(update_fields=['is_featured', 'updated_at'])
+                notify_product_status(
+                    product,
+                    is_active=(product.status == 'active'),
+                    is_featured=False,
+                    reason=_('Your product is no longer featured. Continue delivering great experiences to regain the spotlight!')
+                )
+                updated += 1
+        self.message_user(request, f'{updated} products removed from featured.')
+    remove_featured.short_description = 'Remove selected products from featured'
+    
+    def enable_vto(self, request, queryset):
+        updated = queryset.update(vto_enabled=True)
+        self.message_user(request, f'Virtual Try-On enabled for {updated} products.')
+    enable_vto.short_description = 'Enable Virtual Try-On'
+    
+    def disable_vto(self, request, queryset):
+        updated = queryset.update(vto_enabled=False)
+        self.message_user(request, f'Virtual Try-On disabled for {updated} products.')
+    disable_vto.short_description = 'Disable Virtual Try-On'
 
 
 @admin.register(ProductImage)
