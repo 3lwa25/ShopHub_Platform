@@ -1,3 +1,4 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -14,86 +15,403 @@
     
     <style>
         :root {
-            --primary-color: #4f46e5;
+            --primary-color: #3452B3;
+            --primary-hover: #2e47a0;
             --secondary-color: #10b981;
-            --dark-color: #1f2937;
+            --dark-color: #2c3e50;
+            --light-bg: #e5e5f7;
+            --white: #ffffff;
         }
         
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background-size: cover;
+            background-attachment: fixed;
+            background-position: center;
             background-color: #f9fafb;
+            color: #1f2937;
         }
         
         .navbar {
-            background: linear-gradient(135deg, var(--primary-color) 0%, #7c3aed 100%);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            background: linear-gradient(135deg, var(--dark-color) 0%, var(--primary-color) 100%);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1030;
+            transition: all 0.3s ease;
+        }
+        
+        .navbar.scrolled {
+            padding: 0.5rem 0;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
         
         .navbar-brand {
             font-weight: 700;
             font-size: 1.5rem;
+            color: white !important;
+            display: flex;
+            align-items: center;
+        }
+        
+        .navbar-brand:hover {
+            color: #e5e7eb !important;
+        }
+        
+        .navbar-brand i {
+            margin-right: 0.5rem;
+        }
+        
+        /* Cart Icon Styles */
+        .cart-icon {
+            position: relative;
+            display: inline-block;
+        }
+        
+        .cart-icon .badge {
+            position: absolute;
+            top: -8px;
+            right: -10px;
+            padding: 0.25rem 0.5rem;
+            font-size: 0.7rem;
+            font-weight: bold;
+            border-radius: 10px;
+        }
+        
+        .nav-link {
+            color: rgba(255, 255, 255, 0.9) !important;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+        
+        .nav-link:hover {
+            color: white !important;
         }
         
         .btn-primary {
             background-color: var(--primary-color);
             border-color: var(--primary-color);
+            font-weight: 600;
+            padding: 0.5rem 1.5rem;
+            border-radius: 0.5rem;
+            transition: all 0.2s;
         }
         
         .btn-primary:hover {
-            background-color: #4338ca;
-            border-color: #4338ca;
+            background-color: var(--primary-hover);
+            border-color: var(--primary-hover);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .btn-light {
+            background-color: white;
+            border-color: white;
+            color: var(--primary-color);
+            font-weight: 600;
+        }
+        
+        .btn-light:hover {
+            background-color: #f3f4f6;
+            border-color: #f3f4f6;
+            color: var(--primary-hover);
         }
         
         .card {
             border: none;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
-            border-radius: 10px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border-radius: 1rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
         }
         
         .card-header {
-            background: linear-gradient(135deg, var(--primary-color) 0%, #7c3aed 100%);
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--dark-color) 100%);
             color: white;
-            border-radius: 10px 10px 0 0 !important;
+            border-radius: 1rem 1rem 0 0 !important;
+            padding: 1.25rem 1.5rem;
         }
         
         .footer {
-            background-color: var(--dark-color);
-            color: #fff;
-            padding: 2rem 0;
+            background: linear-gradient(135deg, var(--dark-color) 0%, #1a252f 100%);
+            color: #e5e7eb;
+            padding: 3rem 0 1rem;
             margin-top: 4rem;
+            box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+        
+        .footer h5 {
+            color: white;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+        }
+        
+        .footer .text-muted {
+            color: #9ca3af !important;
+        }
+        
+        .footer a {
+            color: #d1d5db;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        
+        .footer a:hover {
+            color: white;
+        }
+        
+        .footer-links {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .footer-links li {
+            margin-bottom: 0.75rem;
+        }
+        
+        .footer-social a {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            margin: 0 5px;
+            transition: all 0.3s;
+        }
+        
+        .footer-social a:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-3px);
+        }
+        
+        /* Breadcrumbs */
+        .breadcrumb {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 0.75rem 1rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        /* Search Autocomplete */
+        .search-autocomplete {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 40px;
+            background: white;
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            max-height: 400px;
+            overflow-y: auto;
+            z-index: 1000;
+            display: none;
+        }
+        
+        .search-autocomplete.show {
+            display: block;
+        }
+        
+        .search-autocomplete-item {
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid #f3f4f6;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .search-autocomplete-item:hover {
+            background: #f9fafb;
+        }
+        
+        .search-autocomplete-item:last-child {
+            border-bottom: none;
+        }
+        
+        .alert {
+            border-radius: 0.75rem;
+            border: none;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .dropdown-menu {
+            border-radius: 0.75rem;
+            border: none;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            margin-top: 0.5rem;
+        }
+        
+        .dropdown-item {
+            padding: 0.75rem 1.25rem;
+            transition: background-color 0.2s;
+        }
+        
+        .dropdown-item:hover {
+            background-color: #f3f4f6;
+        }
+        
+        .dropdown-item i {
+            width: 20px;
+            text-align: center;
+        }
+        
+        main {
+            min-height: calc(100vh - 200px);
+        }
+        
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 5px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-hover);
         }
     </style>
 </head>
-<body>
+<body style="background-image: url('{% static 'images/Backgroud.jpg' %}'); background-size: cover; background-attachment: fixed; background-position: center;">
     <!-- Navigation -->
     <nav class="navbar navbar-expand-lg navbar-dark">
         <div class="container">
-            <a class="navbar-brand" href="{% url 'home' %}">
-                <i class="fas fa-shopping-bag me-2"></i>Shop Hub
+            <a class="navbar-brand" href="{% url 'core:home' %}">
+                <i class="fas fa-shopping-bag"></i>
+                <span>Shophub</span>
             </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'core:home' %}">
+                            <i class="fas fa-home me-1"></i>Home
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'products:product_list' %}">
+                            <i class="fas fa-shopping-bag me-1"></i>Products
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'ai_chatbot:chat_home' %}">
+                            <i class="fas fa-robot me-1"></i>AI Assistant
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'virtual_tryon:vto_home' %}">
+                            <i class="fas fa-magic me-1"></i>Virtual Try-On
+                        </a>
+                    </li>
+                    {% if user.is_authenticated %}
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'rewards:dashboard' %}">
+                            <i class="fas fa-trophy me-1"></i>Rewards
+                            {% if reward_account %}
+                            <span class="badge bg-warning text-dark ms-1">{{ reward_account.points_balance }}</span>
+                            {% endif %}
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+                <form class="d-flex me-3 mb-2 mb-lg-0 position-relative" method="get" action="{% url 'products:search' %}" style="max-width: 300px;" id="searchForm">
+                    <input class="form-control form-control-sm me-2" type="search" name="q" placeholder="Search products..." aria-label="Search" value="{{ request.GET.q }}" id="searchInput" autocomplete="off">
+                    <button class="btn btn-outline-light btn-sm" type="submit">
+                        <i class="fas fa-search"></i>
+                    </button>
+                    <div class="search-autocomplete" id="searchAutocomplete"></div>
+                </form>
+                <ul class="navbar-nav ms-auto align-items-center">
+                    <!-- Shopping Cart -->
+                    <li class="nav-item me-3">
+                        <a href="{% url 'cart:cart_view' %}" class="nav-link cart-icon">
+                            <i class="fas fa-shopping-cart fa-lg"></i>
+                            {% if cart_count > 0 %}
+                            <span class="badge bg-danger cart-count">{{ cart_count }}</span>
+                            {% else %}
+                            <span class="badge bg-danger cart-count d-none">0</span>
+                            {% endif %}
+                        </a>
+                    </li>
+                    {% if is_buyer %}
+                    <li class="nav-item me-3">
+                        <a href="{% url 'wishlist:wishlist' %}" class="nav-link position-relative" title="My Wishlist">
+                            <i class="fas fa-heart fa-lg"></i>
+                            {% if wishlist_count > 0 %}
+                            <span class="badge bg-danger wishlist-count">{{ wishlist_count }}</span>
+                            {% else %}
+                            <span class="badge bg-danger wishlist-count d-none">0</span>
+                            {% endif %}
+                        </a>
+                    </li>
+                    {% endif %}
+                    
                     {% if user.is_authenticated %}
                         <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
-                                <i class="fas fa-user-circle me-1"></i>{{ user.full_name|default:user.email }}
+                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-user-circle me-2"></i>
+                                <span>{{ user.full_name|default:user.email|truncatechars:20 }}</span>
                             </a>
-                            <ul class="dropdown-menu">
-                                <li><a class="dropdown-item" href="{% url 'accounts:profile' %}">
-                                    <i class="fas fa-user me-2"></i>Profile
-                                </a></li>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'accounts:profile' %}">
+                                        <i class="fas fa-user"></i> Profile
+                                    </a>
+                                </li>
+                                {% if is_buyer %}
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'wishlist:wishlist' %}">
+                                        <i class="fas fa-heart"></i> My Wishlist
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'orders:buyer_orders' %}">
+                                        <i class="fas fa-box"></i> My Orders
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'orders:buyer_payment_history' %}">
+                                        <i class="fas fa-credit-card"></i> Payment History
+                                    </a>
+                                </li>
+                                {% endif %}
                                 {% if user.is_seller %}
-                                <li><a class="dropdown-item" href="{% url 'accounts:seller_dashboard' %}">
-                                    <i class="fas fa-store me-2"></i>Seller Dashboard
-                                </a></li>
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'accounts:seller_dashboard' %}">
+                                        <i class="fas fa-store"></i> Seller Dashboard
+                                    </a>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item" href="{% url 'orders:seller_payment_history' %}">
+                                        <i class="fas fa-coins"></i> Seller Payments
+                                    </a>
+                                </li>
                                 {% endif %}
                                 <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item" href="{% url 'accounts:logout' %}">
-                                    <i class="fas fa-sign-out-alt me-2"></i>Logout
-                                </a></li>
+                                <li>
+                                    <a class="dropdown-item text-danger" href="{% url 'accounts:logout' %}">
+                                        <i class="fas fa-sign-out-alt"></i> Logout
+                                    </a>
+                                </li>
                             </ul>
                         </li>
                     {% else %}
@@ -102,9 +420,9 @@
                                 <i class="fas fa-sign-in-alt me-1"></i>Login
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link btn btn-light btn-sm ms-2" href="{% url 'accounts:register' %}">
-                                Sign Up
+                        <li class="nav-item ms-2">
+                            <a class="btn btn-light btn-sm" href="{% url 'accounts:register' %}">
+                                <i class="fas fa-user-plus me-1"></i>Sign Up
                             </a>
                         </li>
                     {% endif %}
@@ -142,13 +460,92 @@
     <!-- Footer -->
     <footer class="footer">
         <div class="container">
-            <div class="row">
-                <div class="col-md-6">
-                    <h5><i class="fas fa-shopping-bag me-2"></i>Shop Hub</h5>
-                    <p class="text-muted">AI-Powered E-Commerce Platform</p>
+            <div class="row g-4">
+                <!-- About Section -->
+                <div class="col-lg-4 col-md-6">
+                    <h5>
+                        <i class="fas fa-shopping-bag me-2"></i>Shophub
+                    </h5>
+                    <p class="text-muted small">
+                        Experience the future of online shopping with AI-powered recommendations, 
+                        virtual try-on technology, and personalized experiences.
+                    </p>
+                    <div class="footer-social mt-3">
+                        <a href="#" title="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" title="Twitter"><i class="fab fa-twitter"></i></a>
+                        <a href="#" title="Instagram"><i class="fab fa-instagram"></i></a>
+                        <a href="#" title="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="#" title="YouTube"><i class="fab fa-youtube"></i></a>
+                    </div>
                 </div>
-                <div class="col-md-6 text-md-end">
-                    <p class="text-muted">&copy; 2025 Shop Hub. All rights reserved.</p>
+                
+                <!-- Quick Links -->
+                <div class="col-lg-2 col-md-6">
+                    <h5>Quick Links</h5>
+                    <ul class="footer-links">
+                        <li><a href="{% url 'core:home' %}"><i class="fas fa-home me-2"></i>Home</a></li>
+                        <li><a href="{% url 'products:product_list' %}"><i class="fas fa-shopping-bag me-2"></i>Products</a></li>
+                        <li><a href="{% url 'chatbot:chat_home' %}"><i class="fas fa-robot me-2"></i>AI Assistant</a></li>
+                        <li><a href="{% url 'virtual_tryon:vto_home' %}"><i class="fas fa-magic me-2"></i>Virtual Try-On</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Customer Service -->
+                <div class="col-lg-2 col-md-6">
+                    <h5>Customer Service</h5>
+                    <ul class="footer-links">
+                        {% if user.is_authenticated %}
+                        <li><a href="{% url 'accounts:profile' %}"><i class="fas fa-user me-2"></i>My Account</a></li>
+                        <li><a href="{% url 'orders:buyer_orders' %}"><i class="fas fa-box me-2"></i>My Orders</a></li>
+                        <li><a href="{% url 'wishlist:wishlist' %}"><i class="fas fa-heart me-2"></i>Wishlist</a></li>
+                        <li><a href="{% url 'rewards:dashboard' %}"><i class="fas fa-trophy me-2"></i>Rewards</a></li>
+                        {% else %}
+                        <li><a href="{% url 'accounts:login' %}"><i class="fas fa-sign-in-alt me-2"></i>Login</a></li>
+                        <li><a href="{% url 'accounts:register' %}"><i class="fas fa-user-plus me-2"></i>Register</a></li>
+                        {% endif %}
+                    </ul>
+                </div>
+                
+                <!-- For Sellers -->
+                <div class="col-lg-2 col-md-6">
+                    <h5>For Sellers</h5>
+                    <ul class="footer-links">
+                        {% if user.is_seller %}
+                        <li><a href="{% url 'accounts:seller_dashboard' %}"><i class="fas fa-store me-2"></i>Dashboard</a></li>
+                        <li><a href="{% url 'products:seller_products' %}"><i class="fas fa-box-open me-2"></i>My Products</a></li>
+                        <li><a href="{% url 'orders:seller_orders' %}"><i class="fas fa-shipping-fast me-2"></i>Orders</a></li>
+                        {% else %}
+                        <li><a href="{% url 'accounts:register' %}?role=seller"><i class="fas fa-store me-2"></i>Become a Seller</a></li>
+                        {% endif %}
+                        <li><a href="#"><i class="fas fa-info-circle me-2"></i>Seller Guide</a></li>
+                        <li><a href="#"><i class="fas fa-headset me-2"></i>Seller Support</a></li>
+                    </ul>
+                </div>
+                
+                <!-- Contact Info -->
+                <div class="col-lg-2 col-md-6">
+                    <h5>Contact Us</h5>
+                    <ul class="footer-links">
+                        <li><a href="#"><i class="fas fa-phone me-2"></i>+20 123 456 7890</a></li>
+                        <li><a href="mailto:support@shophub.com"><i class="fas fa-envelope me-2"></i>support@shophub.com</a></li>
+                        <li><a href="#"><i class="fas fa-map-marker-alt me-2"></i>Cairo, Egypt</a></li>
+                        <li><a href="#"><i class="fas fa-question-circle me-2"></i>Help Center</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- Bottom Bar -->
+            <hr class="my-4" style="border-color: rgba(255, 255, 255, 0.1);">
+            <div class="row align-items-center">
+                <div class="col-md-6 text-center text-md-start">
+                    <p class="text-muted small mb-0">
+                        &copy; 2025 Shophub. All rights reserved. Powered by AI.
+                    </p>
+                </div>
+                <div class="col-md-6 text-center text-md-end">
+                    <a href="#" class="text-muted small me-3">Privacy Policy</a>
+                    <a href="#" class="text-muted small me-3">Terms of Service</a>
+                    <a href="#" class="text-muted small">Cookie Policy</a>
                 </div>
             </div>
         </div>
@@ -157,6 +554,137 @@
     <!-- Bootstrap 5 JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     {% block extra_js %}{% endblock %}
+    
+    <!-- Global JavaScript Variables -->
+    <script>
+        const isAuthenticated = {{ user.is_authenticated|yesno:"true,false" }};
+        const isSeller = {{ user.is_seller|yesno:"true,false" }};
+    </script>
+    
+    <!-- Navigation & Search JavaScript -->
+    <script>
+        // Sticky Navbar
+        window.addEventListener('scroll', function() {
+            const navbar = document.querySelector('.navbar');
+            if (window.scrollY > 100) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+        
+        // Search Autocomplete
+        const searchInput = document.getElementById('searchInput');
+        const searchAutocomplete = document.getElementById('searchAutocomplete');
+        let searchTimeout;
+        
+        if (searchInput) {
+            searchInput.addEventListener('input', function() {
+                const query = this.value.trim();
+                
+                clearTimeout(searchTimeout);
+                
+                if (query.length < 2) {
+                    searchAutocomplete.classList.remove('show');
+                    return;
+                }
+                
+                searchTimeout = setTimeout(() => {
+                    fetch(`/search/autocomplete/?q=${encodeURIComponent(query)}`)
+                        .then(response => response.json())
+                        .then(data => {
+                            showAutocompleteResults(data);
+                        })
+                        .catch(error => {
+                            console.error('Autocomplete error:', error);
+                        });
+                }, 300);
+            });
+            
+            // Close autocomplete when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!searchInput.contains(e.target) && !searchAutocomplete.contains(e.target)) {
+                    searchAutocomplete.classList.remove('show');
+                }
+            });
+        }
+        
+        function showAutocompleteResults(data) {
+            const autocomplete = document.getElementById('searchAutocomplete');
+            
+            if (!data.products.length && !data.categories.length) {
+                autocomplete.classList.remove('show');
+                return;
+            }
+            
+            let html = '';
+            
+            // Show categories
+            if (data.categories.length > 0) {
+                html += '<div class="p-2" style="background: #f9fafb; font-weight: 600; font-size: 0.85rem;">Categories</div>';
+                data.categories.forEach(category => {
+                    html += `
+                        <a href="/products/category/${category.slug}/" class="search-autocomplete-item text-decoration-none text-dark d-block">
+                            <i class="fas fa-folder me-2 text-primary"></i>${category.name}
+                        </a>
+                    `;
+                });
+            }
+            
+            // Show products
+            if (data.products.length > 0) {
+                html += '<div class="p-2" style="background: #f9fafb; font-weight: 600; font-size: 0.85rem;">Products</div>';
+                data.products.forEach(product => {
+                    html += `
+                        <a href="/products/${product.slug}/" class="search-autocomplete-item text-decoration-none text-dark d-block">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-tag me-2 text-success"></i>
+                                <div class="flex-grow-1">
+                                    <div style="font-size: 0.9rem;">${product.title}</div>
+                                    <small class="text-muted">${product.category__name} • EGP ${product.price}</small>
+                                </div>
+                            </div>
+                        </a>
+                    `;
+                });
+            }
+            
+            html += `
+                <a href="/products/search/?q=${encodeURIComponent(searchInput.value)}" class="search-autocomplete-item text-center text-primary d-block" style="font-weight: 600;">
+                    View all results <i class="fas fa-arrow-right ms-1"></i>
+                </a>
+            `;
+            
+            autocomplete.innerHTML = html;
+            autocomplete.classList.add('show');
+        }
+        
+        // Smooth scroll to top button
+        window.addEventListener('scroll', function() {
+            const scrollBtn = document.getElementById('scrollTopBtn');
+            if (scrollBtn) {
+                if (window.scrollY > 300) {
+                    scrollBtn.style.display = 'block';
+                } else {
+                    scrollBtn.style.display = 'none';
+                }
+            }
+        });
+        
+        function scrollToTop() {
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+    
+    <!-- Wishlist JavaScript -->
+    {% if user.is_authenticated and not user.is_seller %}
+    <script src="{% static 'js/wishlist.js' %}"></script>
+    {% endif %}
+    
+    <!-- Scroll to Top Button -->
+    <button onclick="scrollToTop()" id="scrollTopBtn" class="btn btn-primary" style="position: fixed; bottom: 20px; right: 20px; z-index: 1000; border-radius: 50%; width: 50px; height: 50px; display: none; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+        <i class="fas fa-arrow-up"></i>
+    </button>
 </body>
 </html>
 

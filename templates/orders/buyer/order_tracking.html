@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block title %}Track Order {{ order.order_number }} - Shop Hub{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3 mb-0">Tracking Order #{{ order.order_number }}</h1>
+        <a href="{% url 'orders:buyer_order_detail' order.order_number %}" class="btn btn-outline-light">Back to Order</a>
+    </div>
+
+    {% if shipments_processed %}
+        {% for shipment_data in shipments_processed %}
+            {% with shipment=shipment_data.shipment %}
+            <div class="card shadow-sm border-0 mb-3">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h2 class="h5 mb-1">Courier: {{ shipment.courier_name }}</h2>
+                            <div class="text-muted">Tracking #: {{ shipment.tracking_number }}</div>
+                        </div>
+                        <span class="badge bg-primary">{{ shipment.current_status|title }}</span>
+                    </div>
+                    <ul class="timeline list-unstyled mb-0">
+                        {% for step in shipment_data.tracking_steps %}
+                            <li class="mb-3 d-flex align-items-start">
+                                <div class="me-3 flex-shrink-0">
+                                    {% if step.is_completed %}
+                                        {% if step.status == 'delivered' %}
+                                            <i class="fas fa-check-circle fa-2x text-success" title="Completed"></i>
+                                        {% elif step.is_current %}
+                                            <i class="fas fa-clock fa-2x text-primary" title="Current Status"></i>
+                                        {% else %}
+                                            <i class="fas fa-check fa-2x text-success" title="Completed"></i>
+                                        {% endif %}
+                                    {% else %}
+                                        <i class="fas fa-circle fa-2x text-muted" title="Pending"></i>
+                                    {% endif %}
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="fw-semibold d-flex align-items-center">
+                                        {{ step.status_display }}
+                                        {% if step.is_completed %}
+                                            {% if step.is_current %}
+                                                <span class="badge bg-primary ms-2">Current</span>
+                                            {% else %}
+                                                <span class="badge bg-success ms-2">Done</span>
+                                            {% endif %}
+                                        {% else %}
+                                            <span class="badge bg-secondary ms-2">Pending</span>
+                                        {% endif %}
+                                    </div>
+                                    {% if step.event %}
+                                        <div class="small text-muted">
+                                            {% if step.event.timestamp %}
+                                                {{ step.event.timestamp|date:"M d, Y H:i" }}
+                                            {% endif %}
+                                            {% if step.event.location %} · {{ step.event.location }}{% endif %}
+                                        </div>
+                                        {% if step.event.notes %}<div class="small">{{ step.event.notes }}</div>{% endif %}
+                                    {% else %}
+                                        <div class="small text-muted">Waiting for update...</div>
+                                    {% endif %}
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                    {% if shipment.estimated_delivery %}
+                        <div class="mt-3">
+                            <strong>Estimated delivery:</strong> {{ shipment.estimated_delivery|date:"M d, Y" }}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            {% endwith %}
+        {% endfor %}
+    {% else %}
+        <div class="card shadow-sm border-0">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-box-open fa-3x text-muted mb-3"></i>
+                <p class="mb-0 text-muted">Tracking information is not available yet.</p>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
