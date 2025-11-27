@@ -91,73 +91,141 @@ class User(AbstractUser):
         super().save(*args, **kwargs)
 
 
+class ShippingAddress(models.Model):
+    """
+    Saved shipping addresses for users.
+    """
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='shipping_addresses',
+        db_index=True
+    )
+    
+    # Address fields
+    full_name = models.CharField(max_length=255)
+    phone = models.CharField(max_length=20)
+    address_line1 = models.CharField(max_length=255)
+    address_line2 = models.CharField(max_length=255, blank=True)
+    city = models.CharField(max_length=100)
+    state = models.CharField(max_length=100, blank=True)
+    country = models.CharField(max_length=100, default='Egypt')
+    postal_code = models.CharField(max_length=20, blank=True)
+    
+    # Address metadata
+    is_default = models.BooleanField(default=False, help_text=_('Default shipping address'))
+    label = models.CharField(max_length=50, blank=True, help_text=_('Address label, e.g., Home, Work'))
+    
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 'shipping_addresses'
+        verbose_name = _('Shipping Address')
+        verbose_name_plural = _('Shipping Addresses')
+        ordering = ['-is_default', '-created_at']
+        indexes = [
+            models.Index(fields=['user', 'is_default']),
+        ]
+    
+    def __str__(self):
+        return f"{self.full_name} - {self.city}, {self.country}"
+    
+    def to_dict(self):
+        """Convert to dictionary for use in checkout"""
+        return {
+            'full_name': self.full_name,
+            'email': self.user.email,
+            'phone': self.phone,
+            'address_line1': self.address_line1,
+            'address_line2': self.address_line2,
+            'city': self.city,
+            'state': self.state,
+            'country': self.country,
+            'postal_code': self.postal_code,
+        }
+    
+    def save(self, *args, **kwargs):
+        # If this is set as default, unset other defaults for this user
+        if self.is_default:
+            ShippingAddress.objects.filter(user=self.user, is_default=True).exclude(pk=self.pk).update(is_default=False)
+        super().save(*args, **kwargs)
+
+
 class SellerProfile(models.Model):
     """
     Extended profile for sellers.
     One-to-one relationship with User where role='seller'.
     """
-    # One-to-one relationship with User
+    # One-to-one relationship with User (primary key)
     user = models.OneToOneField(
         User,
         on_delete=models.CASCADE,
         related_name='seller_profile',
-        primary_key=True
+        primary_key=True,
+        db_index=True
     )
     
     # Business information
     business_name = models.CharField(
         max_length=255,
-        help_text=_('Shop/Business name')
+        help_text=_('Official business name')
     )
-    business_description = models.TextField(
+    business_registration_number = models.CharField(
+        max_length=100,
         blank=True,
-        help_text=_('Describe your business')
+        help_text=_('Business registration/license number')
     )
-    logo = models.ImageField(
-        upload_to='seller_logos/%Y/%m/',
+    
+    # Contact information
+    business_email = models.EmailField(
+        blank=True,
+        help_text=_('Business email (can differ from user email)')
+    )
+    business_phone = PhoneNumberField(
         blank=True,
         null=True,
-        help_text=_('Business logo')
+        help_text=_('Business phone number')
+    )
+    business_address = models.TextField(
+        blank=True,
+        help_text=_('Business physical address')
     )
     
-    # Business address
-    address = models.TextField(blank=True, help_text=_('Business address'))
-    city = models.CharField(max_length=100, blank=True)
-    country = models.CharField(max_length=100, default='Egypt')
-    postal_code = models.CharField(max_length=20, blank=True)
-    
-    # Verification and status
-    verified_seller = models.BooleanField(
+    # Business status
+    is_approved = models.BooleanField(
         default=False,
-        help_text=_('Admin-verified seller badge')
+        db_index=True,
+        help_text=_('Seller account approved by admin')
+    )
+    is_verified = models.BooleanField(
+        default=False,
+        help_text=_('Business verified (documents checked)')
+    )
+    approval_date = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text=_('Date when seller was approved')
     )
     
-    # Performance metrics
+    # Business metrics
     total_sales = models.DecimalField(
         max_digits=12,
         decimal_places=2,
-        default=0.00,
+        default=0,
         help_text=_('Total sales amount (EGP)')
     )
     total_orders = models.PositiveIntegerField(
         default=0,
-        help_text=_('Total completed orders')
+        help_text=_('Total number of orders')
     )
     rating = models.DecimalField(
         max_digits=3,
         decimal_places=2,
-        default=0.00,
-        help_text=_('Average seller rating (0-5)')
-    )
-    rating_count = models.PositiveIntegerField(
         default=0,
-        help_text=_('Number of ratings received')
+        help_text=_('Average seller rating')
     )
-    
-    # Social media links
-    website = models.URLField(blank=True, max_length=500)
-    facebook = models.URLField(blank=True, max_length=500)
-    instagram = models.URLField(blank=True, max_length=500)
     
     # Timestamps
     created_at = models.DateTimeField(auto_now_add=True)
@@ -168,38 +236,10 @@ class SellerProfile(models.Model):
         verbose_name = _('Seller Profile')
         verbose_name_plural = _('Seller Profiles')
         ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['is_approved']),
+            models.Index(fields=['business_name']),
+        ]
     
     def __str__(self):
-        return f"{self.business_name} (Seller: {self.user.email})"
-    
-    def update_rating(self):
-        """
-        Recalculate average rating from product reviews.
-        Called when a new review is added.
-        """
-        from apps.products.models import Product
-        from apps.reviews.models import Review
-        
-        # Get all products by this seller
-        seller_products = Product.objects.filter(seller=self)
-        
-        # Get all reviews for these products
-        reviews = Review.objects.filter(product__in=seller_products)
-        
-        if reviews.exists():
-            total_rating = sum(review.rating for review in reviews)
-            self.rating_count = reviews.count()
-            self.rating = round(total_rating / self.rating_count, 2)
-            self.save(update_fields=['rating', 'rating_count', 'updated_at'])
-    
-    def update_sales(self, amount):
-        """
-        Update total sales when an order is completed.
-        
-        Args:
-            amount (Decimal): Order amount to add to total sales
-        """
-        self.total_sales += amount
-        self.total_orders += 1
-        self.save(update_fields=['total_sales', 'total_orders', 'updated_at'])
-
+        return f"{self.business_name} ({self.user.email})"

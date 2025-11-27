@@ -146,14 +146,41 @@ class UserProfileForm(forms.ModelForm):
     """
     class Meta:
         model = User
-        fields = ['full_name', 'first_name', 'last_name', 'phone', 'avatar']
+        fields = ['username', 'email', 'full_name', 'first_name', 'last_name', 'phone', 'avatar']
         widgets = {
+            'username': forms.TextInput(attrs={'class': 'form-control', 'autocomplete': 'username'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control', 'autocomplete': 'email'}),
             'full_name': forms.TextInput(attrs={'class': 'form-control', 'autocomplete': 'name'}),
             'first_name': forms.TextInput(attrs={'class': 'form-control', 'autocomplete': 'given-name'}),
             'last_name': forms.TextInput(attrs={'class': 'form-control', 'autocomplete': 'family-name'}),
             'phone': forms.TextInput(attrs={'class': 'form-control', 'autocomplete': 'tel'}),
             'avatar': forms.FileInput(attrs={'class': 'form-control', 'accept': 'image/*', 'id': 'id_avatar'}),
         }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Make username and email editable
+        if self.instance and self.instance.pk:
+            self.fields['username'].required = True
+            self.fields['email'].required = True
+    
+    def clean_username(self):
+        username = self.cleaned_data.get('username')
+        if username:
+            # Check if username is already taken by another user
+            existing_user = User.objects.filter(username=username).exclude(pk=self.instance.pk).first()
+            if existing_user:
+                raise forms.ValidationError('This username is already taken. Please choose another.')
+        return username
+    
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        if email:
+            # Check if email is already taken by another user
+            existing_user = User.objects.filter(email=email).exclude(pk=self.instance.pk).first()
+            if existing_user:
+                raise forms.ValidationError('This email is already taken. Please choose another.')
+        return email
 
 
 class SellerProfileForm(forms.ModelForm):
@@ -163,26 +190,17 @@ class SellerProfileForm(forms.ModelForm):
     class Meta:
         model = SellerProfile
         fields = [
-            'business_name', 'business_description', 'logo',
-            'address', 'city', 'country', 'postal_code',
-            'website', 'facebook', 'instagram'
+            'business_name', 'business_registration_number',
+            'business_email', 'business_phone', 'business_address'
         ]
         widgets = {
             'business_name': forms.TextInput(attrs={'class': 'form-control'}),
-            'business_description': forms.Textarea(attrs={
+            'business_registration_number': forms.TextInput(attrs={'class': 'form-control'}),
+            'business_email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'business_phone': forms.TextInput(attrs={'class': 'form-control'}),
+            'business_address': forms.Textarea(attrs={
                 'class': 'form-control',
-                'rows': 4
+                'rows': 3
             }),
-            'logo': forms.FileInput(attrs={'class': 'form-control', 'accept': 'image/*', 'id': 'id_logo'}),
-            'address': forms.Textarea(attrs={
-                'class': 'form-control',
-                'rows': 2
-            }),
-            'city': forms.TextInput(attrs={'class': 'form-control'}),
-            'country': forms.TextInput(attrs={'class': 'form-control'}),
-            'postal_code': forms.TextInput(attrs={'class': 'form-control'}),
-            'website': forms.URLInput(attrs={'class': 'form-control'}),
-            'facebook': forms.URLInput(attrs={'class': 'form-control'}),
-            'instagram': forms.URLInput(attrs={'class': 'form-control'}),
         }
 

@@ -81,10 +81,19 @@ def login_view(request):
                 messages.success(request, f'Welcome back, {user.full_name}!')
                 
                 # Redirect based on role
-                next_url = request.GET.get('next', 'accounts:profile')
-                if user.is_seller:
+                next_url = request.GET.get('next')
+                
+                if user.is_admin_user:
+                    # Admin users go to admin dashboard
+                    return redirect('accounts:admin_dashboard')
+                elif user.is_seller:
+                    # Sellers go to seller dashboard
                     return redirect('accounts:seller_dashboard')
-                return redirect(next_url)
+                elif user.is_buyer:
+                    # Buyers go to home page
+                    return redirect(next_url if next_url else 'core:home')
+                else:
+                    return redirect('core:home')
             else:
                 messages.error(request, 'Invalid email/username or password.')
         else:
@@ -179,26 +188,4 @@ def seller_profile_edit_view(request):
     
     return render(request, 'accounts/seller_profile_edit.html', {'form': form, 'seller_profile': seller_profile})
 
-
-@login_required
-def seller_dashboard_view(request):
-    """
-    Seller dashboard (placeholder for now).
-    """
-    if not request.user.is_seller:
-        messages.error(request, 'Only sellers can access this page.')
-        return redirect('accounts:profile')
-    
-    seller_profile = getattr(request.user, 'seller_profile', None)
-    
-    if not seller_profile:
-        messages.info(request, 'Please complete your seller profile first.')
-        return redirect('accounts:seller_profile_create')
-    
-    context = {
-        'seller_profile': seller_profile,
-        'user': request.user,
-    }
-    
-    return render(request, 'accounts/seller_dashboard.html', context)
 
