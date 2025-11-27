@@ -6,7 +6,7 @@ from django.utils.translation import gettext_lazy as _
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.conf import settings
 from apps.products.models import Product
-from apps.orders.models import Order
+from apps.orders.models import Order, OrderItem
 
 
 class Review(models.Model):
@@ -36,6 +36,14 @@ class Review(models.Model):
         blank=True,
         related_name='reviews',
         help_text=_('Order that included this product')
+    )
+    order_item = models.ForeignKey(
+        OrderItem,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='reviews',
+        help_text=_('Specific order item for this product')
     )
     
     # Rating (1-5 stars)
@@ -110,8 +118,16 @@ class Review(models.Model):
         return f"{self.rating}★ - {self.title} by {self.buyer.email}"
     
     def save(self, *args, **kwargs):
-        # Auto-verify purchase if order is provided
-        if self.order and not self.verified_purchase:
+        # Auto-verify purchase if order_item is provided
+        if self.order_item and not self.verified_purchase:
+            # Verify that order_item matches this product
+            if self.order_item.product == self.product:
+                self.verified_purchase = True
+                if not self.order:
+                    self.order = self.order_item.order
+        
+        # Also check order if order_item not provided
+        elif self.order and not self.verified_purchase:
             # Check if order contains this product
             if self.order.items.filter(product=self.product).exists():
                 self.verified_purchase = True
