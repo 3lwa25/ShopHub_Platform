@@ -1,5 +1,6 @@
 """
-Shopping Cart and Order Management Models for Shop Hub
+Order Management Models for Shop Hub
+Note: Shopping Cart models are in apps.cart
 """
 from django.db import models
 from django.utils.translation import gettext_lazy as _
@@ -10,111 +11,8 @@ from apps.accounts.models import SellerProfile
 import uuid
 
 
-class Cart(models.Model):
-    """
-    Shopping cart for buyers.
-    One cart per user.
-    """
-    user = models.OneToOneField(
-        settings.AUTH_USER_MODEL,
-        on_delete=models.CASCADE,
-        related_name='cart',
-        primary_key=True
-    )
-    
-    # Timestamps
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    
-    class Meta:
-        db_table = 'carts'
-        verbose_name = _('Shopping Cart')
-        verbose_name_plural = _('Shopping Carts')
-    
-    def __str__(self):
-        return f"Cart for {self.user.email}"
-    
-    @property
-    def total_items(self):
-        """Total number of items (including quantities)"""
-        return sum(item.quantity for item in self.items.all())
-    
-    @property
-    def total_price(self):
-        """Total cart price"""
-        return sum(item.subtotal for item in self.items.all())
-    
-    def clear(self):
-        """Remove all items from cart"""
-        self.items.all().delete()
-
-
-class CartItem(models.Model):
-    """
-    Individual items in a shopping cart.
-    """
-    cart = models.ForeignKey(
-        Cart,
-        on_delete=models.CASCADE,
-        related_name='items',
-        db_index=True
-    )
-    product = models.ForeignKey(
-        Product,
-        on_delete=models.CASCADE,
-        related_name='cart_items',
-        db_index=True
-    )
-    variant = models.ForeignKey(
-        ProductVariant,
-        on_delete=models.CASCADE,
-        null=True,
-        blank=True,
-        related_name='cart_items'
-    )
-    
-    # Quantity
-    quantity = models.PositiveIntegerField(
-        default=1,
-        validators=[MinValueValidator(1)]
-    )
-    
-    # Timestamps
-    added_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    
-    class Meta:
-        db_table = 'cart_items'
-        verbose_name = _('Cart Item')
-        verbose_name_plural = _('Cart Items')
-        unique_together = [['cart', 'product', 'variant']]
-        ordering = ['-added_at']
-        indexes = [
-            models.Index(fields=['cart', 'product']),
-        ]
-    
-    def __str__(self):
-        variant_info = f" ({self.variant})" if self.variant else ""
-        return f"{self.quantity}x {self.product.title}{variant_info}"
-    
-    @property
-    def unit_price(self):
-        """Get unit price (variant price if applicable)"""
-        if self.variant:
-            return self.variant.final_price
-        return self.product.price
-    
-    @property
-    def subtotal(self):
-        """Calculate subtotal for this cart item"""
-        return self.unit_price * self.quantity
-    
-    def save(self, *args, **kwargs):
-        # Validate stock availability
-        available_stock = self.variant.stock if self.variant else self.product.stock
-        if self.quantity > available_stock:
-            raise ValueError(f"Only {available_stock} items available in stock")
-        super().save(*args, **kwargs)
+# Cart models are now in apps.cart
+# from apps.cart.models import Cart, CartItem
 
 
 class Order(models.Model):
@@ -152,13 +50,48 @@ class Order(models.Model):
     )
     
     # Order financials
+    subtotal_amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        validators=[MinValueValidator(0)],
+        default=0,
+        help_text=_('Subtotal before discounts (EGP)')
+    )
+    discount_amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        validators=[MinValueValidator(0)],
+        default=0,
+        help_text=_('Total discount applied (EGP)')
+    )
+    shipping_amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        validators=[MinValueValidator(0)],
+        default=0,
+        help_text=_('Shipping fee (EGP)')
+    )
+    tax_amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        validators=[MinValueValidator(0)],
+        default=0,
+        help_text=_('Tax amount (EGP)')
+    )
     total_amount = models.DecimalField(
         max_digits=12,
         decimal_places=2,
         validators=[MinValueValidator(0)],
-        help_text=_('Total order amount (EGP)')
+        help_text=_('Total order amount after discounts, shipping, and tax (EGP)')
     )
     currency = models.CharField(max_length=3, default='EGP')
+    
+    # Coupon information
+    coupon_code = models.CharField(
+        max_length=50,
+        blank=True,
+        help_text=_('Applied coupon code')
+    )
     
     # Order status
     status = models.CharField(
@@ -371,10 +304,20 @@ class ShipmentTracking(models.Model):
         help_text=_('Tracking number from courier')
     )
     
+    STATUS_CHOICES = [
+        ('ordered', 'Ordered'),
+        ('confirmed', 'Confirmed'),
+        ('on_pack', 'On Pack'),
+        ('dispatched', 'Dispatched'),
+        ('out_to_delivery', 'Out to Delivery'),
+        ('delivered', 'Delivered'),
+    ]
+    
     # Current status
     current_status = models.CharField(
         max_length=50,
-        default='pending',
+        choices=STATUS_CHOICES,
+        default='ordered',
         help_text=_('Current shipment status')
     )
     
@@ -424,7 +367,7 @@ class ShipmentTracking(models.Model):
     def __str__(self):
         return f"Shipment for {self.order.order_number} - {self.tracking_number}"
     
-    def add_status_update(self, status, location=None, notes=None):
+    def add_status_update(self, status, location=None, notes=None, updated_by='seller'):
         """
         Add a new status update to tracking history.
         
@@ -433,12 +376,13 @@ class ShipmentTracking(models.Model):
             location (str): Location of package
             notes (str): Additional notes
         """
-        import datetime
+        from django.utils import timezone
         
         update = {
             'status': status,
-            'timestamp': datetime.datetime.now().isoformat(),
+            'timestamp': timezone.now().isoformat(),
             'location': location or '',
+            'updated_by': updated_by or 'system',
         }
         
         if notes:
@@ -453,7 +397,335 @@ class ShipmentTracking(models.Model):
         
         # Update delivered_at if status is delivered
         if status.lower() in ['delivered', 'completed']:
-            self.delivered_at = datetime.datetime.now()
+            self.delivered_at = timezone.now()
         
         self.save(update_fields=['history', 'current_status', 'delivered_at', 'updated_at'])
+
+
+class PaymentTransaction(models.Model):
+    """
+    Payment transaction records for orders.
+    Stores detailed payment information (placeholder for real integration).
+    """
+    PAYMENT_METHOD_CHOICES = [
+        ('cod', 'Cash on Delivery'),
+        ('credit_card', 'Credit Card'),
+        ('debit_card', 'Debit Card'),
+        ('paypal', 'PayPal'),
+        ('stripe', 'Stripe'),
+        ('bank_transfer', 'Bank Transfer'),
+        ('mobile_wallet', 'Mobile Wallet'),
+    ]
+    
+    TRANSACTION_STATUS_CHOICES = [
+        ('pending', 'Pending'),
+        ('processing', 'Processing'),
+        ('completed', 'Completed'),
+        ('failed', 'Failed'),
+        ('cancelled', 'Cancelled'),
+        ('refunded', 'Refunded'),
+        ('partially_refunded', 'Partially Refunded'),
+    ]
+    
+    # Transaction identification
+    transaction_id = models.CharField(
+        max_length=100,
+        unique=True,
+        db_index=True,
+        help_text=_('Unique transaction ID')
+    )
+    
+    # Order relationship
+    order = models.ForeignKey(
+        Order,
+        on_delete=models.CASCADE,
+        related_name='payment_transactions',
+        db_index=True
+    )
+    
+    # Payment details
+    payment_method = models.CharField(
+        max_length=20,
+        choices=PAYMENT_METHOD_CHOICES,
+        help_text=_('Payment method used')
+    )
+    
+    amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        validators=[MinValueValidator(0)],
+        help_text=_('Transaction amount')
+    )
+    
+    currency = models.CharField(max_length=3, default='EGP')
+    
+    status = models.CharField(
+        max_length=20,
+        choices=TRANSACTION_STATUS_CHOICES,
+        default='pending',
+        db_index=True
+    )
+    
+    # Payment gateway info (placeholder)
+    gateway_name = models.CharField(
+        max_length=50,
+        blank=True,
+        help_text=_('Payment gateway name')
+    )
+    gateway_transaction_id = models.CharField(
+        max_length=200,
+        blank=True,
+        help_text=_('Transaction ID from payment gateway')
+    )
+    gateway_response = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text=_('Response from payment gateway (JSON)')
+    )
+    
+    # Card details (masked, for display only)
+    card_last4 = models.CharField(
+        max_length=4,
+        blank=True,
+        help_text=_('Last 4 digits of card')
+    )
+    card_brand = models.CharField(
+        max_length=20,
+        blank=True,
+        help_text=_('Card brand (Visa, Mastercard, etc.)')
+    )
+    
+    # Transaction metadata
+    ip_address = models.GenericIPAddressField(
+        null=True,
+        blank=True,
+        help_text=_('IP address of transaction')
+    )
+    user_agent = models.TextField(
+        blank=True,
+        help_text=_('User agent string')
+    )
+    
+    # Payment summary fields
+    platform_fee = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=0,
+        validators=[MinValueValidator(0)],
+        help_text=_('Platform fee (EGP)')
+    )
+    processing_fee = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=0,
+        validators=[MinValueValidator(0)],
+        help_text=_('Processing fee (EGP)')
+    )
+    net_amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=0,
+        validators=[MinValueValidator(0)],
+        help_text=_('Net amount after fees (EGP)')
+    )
+    payment_summary = models.JSONField(
+        default=dict,
+        blank=True,
+        help_text=_('Payment summary details (JSON)')
+    )
+    
+    # Refund information
+    refund_amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=0,
+        validators=[MinValueValidator(0)],
+        help_text=_('Amount refunded')
+    )
+    refund_reason = models.TextField(
+        blank=True,
+        help_text=_('Reason for refund')
+    )
+    refunded_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text=_('Date/time of refund')
+    )
+    
+    # Notes
+    notes = models.TextField(
+        blank=True,
+        help_text=_('Internal notes about transaction')
+    )
+    
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True, db_index=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    completed_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text=_('Date/time transaction was completed')
+    )
+    
+    class Meta:
+        db_table = 'payment_transactions'
+        verbose_name = _('Payment Transaction')
+        verbose_name_plural = _('Payment Transactions')
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['order', 'status']),
+            models.Index(fields=['transaction_id']),
+            models.Index(fields=['status', '-created_at']),
+        ]
+    
+    def __str__(self):
+        return f"Transaction {self.transaction_id} - {self.get_payment_method_display()} - {self.get_status_display()}"
+    
+    def save(self, *args, **kwargs):
+        # Auto-generate transaction ID if not set
+        if not self.transaction_id:
+            self.transaction_id = self.generate_transaction_id()
+        super().save(*args, **kwargs)
+    
+    @staticmethod
+    def generate_transaction_id():
+        """Generate unique transaction ID"""
+        import datetime
+        timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+        random_part = str(uuid.uuid4().hex[:8]).upper()
+        return f"TXN-{timestamp}-{random_part}"
+    
+    @property
+    def is_refundable(self):
+        """Check if transaction can be refunded"""
+        return self.status == 'completed' and self.refund_amount < self.amount
+    
+    @property
+    def remaining_refundable_amount(self):
+        """Calculate remaining amount that can be refunded"""
+        return self.amount - self.refund_amount
+
+
+class Invoice(models.Model):
+    """
+    Invoice records for orders.
+    """
+    # Invoice identification
+    invoice_number = models.CharField(
+        max_length=50,
+        unique=True,
+        db_index=True,
+        help_text=_('Unique invoice number')
+    )
+    
+    # Order relationship
+    order = models.OneToOneField(
+        Order,
+        on_delete=models.CASCADE,
+        related_name='invoice',
+        db_index=True
+    )
+    
+    # Invoice details
+    issue_date = models.DateField(
+        auto_now_add=True,
+        help_text=_('Date invoice was issued')
+    )
+    due_date = models.DateField(
+        null=True,
+        blank=True,
+        help_text=_('Payment due date')
+    )
+    
+    # Amounts
+    subtotal = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        validators=[MinValueValidator(0)],
+        help_text=_('Subtotal before tax and shipping')
+    )
+    tax_amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=0,
+        validators=[MinValueValidator(0)],
+        help_text=_('Tax amount')
+    )
+    shipping_amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=0,
+        validators=[MinValueValidator(0)],
+        help_text=_('Shipping cost')
+    )
+    discount_amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        default=0,
+        validators=[MinValueValidator(0)],
+        help_text=_('Discount amount')
+    )
+    total_amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        validators=[MinValueValidator(0)],
+        help_text=_('Total invoice amount')
+    )
+    
+    # Invoice status
+    is_paid = models.BooleanField(
+        default=False,
+        help_text=_('Whether invoice has been paid')
+    )
+    paid_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        help_text=_('Date/time invoice was paid')
+    )
+    
+    # PDF generation
+    pdf_file = models.FileField(
+        upload_to='invoices/%Y/%m/',
+        null=True,
+        blank=True,
+        help_text=_('Generated PDF invoice')
+    )
+    
+    # Notes
+    notes = models.TextField(
+        blank=True,
+        help_text=_('Additional notes on invoice')
+    )
+    
+    # Timestamps
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    class Meta:
+        db_table = 'invoices'
+        verbose_name = _('Invoice')
+        verbose_name_plural = _('Invoices')
+        ordering = ['-created_at']
+        indexes = [
+            models.Index(fields=['order']),
+            models.Index(fields=['invoice_number']),
+            models.Index(fields=['-created_at']),
+        ]
+    
+    def __str__(self):
+        return f"Invoice {self.invoice_number} for Order {self.order.order_number}"
+    
+    def save(self, *args, **kwargs):
+        # Auto-generate invoice number if not set
+        if not self.invoice_number:
+            self.invoice_number = self.generate_invoice_number()
+        super().save(*args, **kwargs)
+    
+    @staticmethod
+    def generate_invoice_number():
+        """Generate unique invoice number"""
+        import datetime
+        timestamp = datetime.datetime.now().strftime('%Y%m%d%H%M%S')
+        random_part = str(uuid.uuid4().hex[:4]).upper()
+        return f"INV-{timestamp}-{random_part}"
 
