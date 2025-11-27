@@ -8,4 +8,8 @@ class RewardsConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
     name = 'apps.rewards'
     verbose_name = 'Rewards System'
+    
+    def ready(self):
+        """Import signals when app is ready"""
+        import apps.rewards.signals  # noqa
 
