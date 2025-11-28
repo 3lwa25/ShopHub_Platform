@@ -4,7 +4,41 @@ Django settings for Shop Hub project.
 
 import os
 from pathlib import Path
-from decouple import config
+
+try:
+    from decouple import config as decouple_config
+except ImportError:
+    decouple_config = None
+
+
+def config(key, default=None, cast=None):
+    """
+    Lightweight substitute for python-decouple's config helper.
+    Falls back to environment variables when python-decouple
+    is not installed (e.g., on fresh dev setups).
+    """
+    if decouple_config is not None:
+        kwargs = {'default': default}
+        if cast is not None:
+            kwargs['cast'] = cast
+        return decouple_config(key, **kwargs)
+
+    value = os.getenv(key, default)
+
+    if value is None:
+        return value
+
+    if cast:
+        try:
+            if cast is bool:
+                if isinstance(value, str):
+                    return value.strip().lower() in ('1', 'true', 'yes', 'on')
+                return bool(value)
+            return cast(value)
+        except (ValueError, TypeError):
+            return default
+
+    return value
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -36,11 +70,14 @@ INSTALLED_APPS = [
     'phonenumber_field',
     
     # Shop Hub apps
+    'apps.core',
     'apps.accounts',
     'apps.products',
+    'apps.cart',
     'apps.orders',
     'apps.reviews',
     'apps.rewards',
+    'apps.notifications',
     'apps.wishlist',
     'apps.analytics',
     'apps.ai_chatbot',
@@ -67,6 +104,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'apps.common.middleware.GuestUserRestrictionMiddleware',
 ]
 
 ROOT_URLCONF = 'shophub.urls'
@@ -83,7 +121,10 @@ TEMPLATES = [
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
                 'django.template.context_processors.media',
-                # Cart context processor will be added later
+                'apps.cart.context_processors.cart_context',
+                'apps.accounts.context_processors.user_role_context',
+                'apps.wishlist.context_processors.wishlist_context',
+                'apps.rewards.context_processors.rewards_context',
             ],
         },
     },
@@ -200,13 +241,26 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 # Email configuration
-EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
-EMAIL_HOST = config('EMAIL_HOST', default='smtp.gmail.com')
-EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
-EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
-EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
-EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
-DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@shophub.com')
+# EMAIL_BACKEND = config('EMAIL_BACKEND', default='django.core.mail.backends.console.EmailBackend')
+# EMAIL_HOST = config('EMAIL_HOST', default='smtp.gmail.com')
+# EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
+# EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
+# EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
+# EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
+# DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='noreply@shophub.com')
+
+# # Email Configuration - Gmail SMTP
+DEFAULT_FROM_EMAIL = "shophub862@gmail.com"
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_HOST_USER = "shophub862@gmail.com"
+EMAIL_HOST_PASSWORD = "nvlnetvxjcyykbee"  # Gmail app password (no spaces)
+EMAIL_USE_TLS = True
+# Using Gmail SMTP backend - emails will be sent to actual recipients
+
+
+# Default primary key field type
 
 # Crispy Forms
 CRISPY_ALLOWED_TEMPLATE_PACKS = "bootstrap5"
@@ -273,8 +327,24 @@ LOGGING = {
 LOGS_DIR = BASE_DIR / 'logs'
 LOGS_DIR.mkdir(exist_ok=True)
 
-# Gemini AI Configuration
-GEMINI_API_KEY = config('GEMINI_API_KEY', default='')
+# ================================
+# AI Chatbot / Gemini Configuration
+# ================================
+# Your Gemini API Key
+_DEFAULT_GEMINI_KEY = 'AIzaSyC7vffx7nSy6vxjcbKpowQRae2OzONpWvs'
+GEMINI_API_KEY = config('GEMINI_API_KEY', default=_DEFAULT_GEMINI_KEY) or _DEFAULT_GEMINI_KEY
+
+# Gemini Model Configuration
+GEMINI_MODEL_NAME = config('GEMINI_MODEL_NAME', default='gemini-2.5-flash') or 'gemini-2.5-flash'
+GEMINI_MAX_RETRIES = config('GEMINI_MAX_RETRIES', default=3, cast=int)
+GEMINI_RETRY_BACKOFF_SECONDS = config('GEMINI_RETRY_BACKOFF_SECONDS', default=1.5, cast=float)
+GEMINI_SAFETY_SETTINGS = None  # Can be overridden in environment or settings_local
+
+# Chatbot Dataset Configuration (for product knowledge base)
+CHATBOT_DATASET_ROOT = config(
+    'CHATBOT_DATASET_ROOT',
+    default=str(BASE_DIR / 'datasets' / 'product_knowledge')
+)
 
 # Virtual Try-On Settings
 VTO_MAX_FILE_SIZE = config('VTO_MAX_FILE_SIZE', default=5242880, cast=int)  # 5MB

@@ -14,12 +14,35 @@ urlpatterns = [
     # Accounts (Authentication)
     path('accounts/', include('apps.accounts.urls')),
     
-    # Home page (placeholder)
-    path('', TemplateView.as_view(template_name='home.html'), name='home'),
+    # Products
+    path('products/', include('apps.products.urls')),
     
-    # App URLs will be added later:
-    # path('products/', include('apps.products.urls')),
-    # ... etc
+    # Shopping Cart
+    path('cart/', include('apps.cart.urls')),
+    
+    # Orders & Checkout
+    path('orders/', include('apps.orders.urls')),
+    
+    # Reviews & Ratings
+    path('reviews/', include('apps.reviews.urls')),
+    
+    # Rewards & Loyalty
+    path('rewards/', include('apps.rewards.urls')),
+    
+    # Notifications Center
+    path('notifications/', include(('apps.notifications.urls', 'notifications'), namespace='notifications')),
+    
+    # Wishlist
+    path('wishlist/', include('apps.wishlist.urls')),
+    
+    # AI Chatbot
+    path('chatbot/', include('apps.ai_chatbot.urls')),
+    
+    # Virtual Try-On
+    path('virtual-tryon/', include('apps.virtual_tryon.urls', namespace='virtual_tryon')),
+    
+    # Core (Homepage and main navigation)
+    path('', include('apps.core.urls')),
 ]
 
 # Serve media files in development
