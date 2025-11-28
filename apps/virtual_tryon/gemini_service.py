@@ -60,7 +60,7 @@ def analyze_image_for_vto(image_bytes, product_type, placement_mode='auto'):
     try:
         # Configure Gemini
         api_key = getattr(settings, 'GEMINI_API_KEY', None)
-        if not api_key or api_key == '' or api_key == 'AIzaSyC7vffx7nSy6vxjcbKpowQRae2OzONpWvs':
+        if not api_key or api_key == '' or api_key == 'your gemini api key here':
             print("⚠️ Gemini API key not configured or using default, using fallback")
             return _fallback_analysis(image_bytes, product_type, placement_mode)
         

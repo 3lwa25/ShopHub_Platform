@@ -331,7 +331,7 @@ LOGS_DIR.mkdir(exist_ok=True)
 # AI Chatbot / Gemini Configuration
 # ================================
 # Your Gemini API Key
-_DEFAULT_GEMINI_KEY = 'AIzaSyC7vffx7nSy6vxjcbKpowQRae2OzONpWvs'
+_DEFAULT_GEMINI_KEY = 'your gemini api key here'
 GEMINI_API_KEY = config('GEMINI_API_KEY', default=_DEFAULT_GEMINI_KEY) or _DEFAULT_GEMINI_KEY
 
 # Gemini Model Configuration
