@@ -1,0 +1,35 @@
+{% extends 'emails/base_email.html' %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
+    <div style="text-align: center; margin-bottom: 30px;">
+        <h1 style="color: #007bff; margin: 0;">Shop Hub Seller Portal</h1>
+    </div>
+    
+    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+        <h2 style="color: #333; margin-top: 0;">New Login to Your Seller Account</h2>
+        <p style="color: #666; font-size: 16px; line-height: 1.6;">
+            Hi {{ seller.full_name|default:seller.email }},
+        </p>
+        <p style="color: #666; font-size: 16px; line-height: 1.6;">
+            We detected a new login to your Shop Hub seller account.
+        </p>
+        <div style="background: white; padding: 15px; border-radius: 5px; margin: 20px 0;">
+            <p style="margin: 5px 0; color: #333;"><strong>Login Time:</strong> {{ login_time|date:"F d, Y H:i" }}</p>
+            <p style="margin: 5px 0; color: #333;"><strong>IP Address:</strong> {{ ip_address|default:"Unknown" }}</p>
+            <p style="margin: 5px 0; color: #333;"><strong>Business:</strong> {{ seller_profile.business_name|default:"N/A" }}</p>
+        </div>
+        <p style="color: #666; font-size: 14px; line-height: 1.6;">
+            If this wasn't you, please secure your account immediately.
+        </p>
+    </div>
+    
+    <div style="text-align: center; margin: 30px 0;">
+        <a href="{{ site_url }}{% url 'accounts:seller_dashboard' %}" 
+           style="background: #007bff; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block;">
+            Go to Seller Dashboard
+        </a>
+    </div>
+</div>
+{% endblock %}
+

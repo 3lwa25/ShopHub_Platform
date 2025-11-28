@@ -1,0 +1,226 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Virtual Try-On - Shop Hub{% endblock %}
+
+{% block extra_css %}
+<style>
+    .vto-hero {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 60px 0;
+        text-align: center;
+    }
+    
+    .vto-category-card {
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 20px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        text-align: center;
+    }
+    
+    .vto-category-card:hover {
+        border-color: #667eea;
+        transform: translateY(-5px);
+        box-shadow: 0 10px 20px rgba(102, 126, 234, 0.2);
+    }
+    
+    .vto-category-icon {
+        font-size: 48px;
+        margin-bottom: 15px;
+    }
+    
+    .vto-product-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 20px;
+        margin-top: 30px;
+    }
+    
+    .vto-product-card {
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+    
+    .vto-product-card:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        transform: translateY(-3px);
+    }
+    
+    .vto-product-image {
+        width: 100%;
+        height: 250px;
+        object-fit: cover;
+    }
+    
+    .vto-product-info {
+        padding: 15px;
+    }
+    
+    .vto-badge {
+        background: #667eea;
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="vto-hero">
+    <div class="container">
+        <h1 class="display-4 mb-3">👗 Virtual Try-On</h1>
+        <p class="lead">Try before you buy! See how products look on you with our AI-powered Virtual Try-On.</p>
+        <p class="text-white-50">{{ total_vto_products }} products available for virtual try-on</p>
+    </div>
+</section>
+
+<!-- Categories Section -->
+<section class="container my-5">
+    <h2 class="text-center mb-4">Choose a Category</h2>
+    
+    <div class="row g-4">
+        {% if products_by_type.glasses.exists %}
+        <div class="col-md-4">
+            <div class="vto-category-card" onclick="scrollToCategory('glasses')">
+                <div class="vto-category-icon">🕶️</div>
+                <h4>Eyewear & Glasses</h4>
+                <p class="text-muted">{{ products_by_type.glasses.count }} products</p>
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if products_by_type.hats.exists %}
+        <div class="col-md-4">
+            <div class="vto-category-card" onclick="scrollToCategory('hats')">
+                <div class="vto-category-icon">🎩</div>
+                <h4>Hats & Headwear</h4>
+                <p class="text-muted">{{ products_by_type.hats.count }} products</p>
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if products_by_type.jewelry.exists %}
+        <div class="col-md-4">
+            <div class="vto-category-card" onclick="scrollToCategory('jewelry')">
+                <div class="vto-category-icon">💎</div>
+                <h4>Jewelry</h4>
+                <p class="text-muted">{{ products_by_type.jewelry.count }} products</p>
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if products_by_type.masks.exists %}
+        <div class="col-md-4">
+            <div class="vto-category-card" onclick="scrollToCategory('masks')">
+                <div class="vto-category-icon">😷</div>
+                <h4>Face Masks</h4>
+                <p class="text-muted">{{ products_by_type.masks.count }} products</p>
+            </div>
+        </div>
+        {% endif %}
+        
+        {% if products_by_type.accessories.exists %}
+        <div class="col-md-4">
+            <div class="vto-category-card" onclick="scrollToCategory('accessories')">
+                <div class="vto-category-icon">🎀</div>
+                <h4>Accessories</h4>
+                <p class="text-muted">{{ products_by_type.accessories.count }} products</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Products by Category -->
+{% for type_key, type_data in products_by_type.items %}
+{% if type_data.exists %}
+<section class="container my-5" id="category-{{ type_key }}">
+    <h3 class="mb-4">{{ type_key|title }}</h3>
+    
+    <div class="vto-product-grid">
+        {% for product in type_data %}
+        <div class="vto-product-card">
+            <a href="{% url 'virtual_tryon:vto_tryon' product.id %}" style="text-decoration: none; color: inherit;">
+                {% if product.images.first %}
+                <img src="{{ product.images.first.image.url }}" 
+                     alt="{{ product.title }}" 
+                     class="vto-product-image">
+                {% else %}
+                <div class="vto-product-image bg-secondary d-flex align-items-center justify-content-center">
+                    <span class="text-white">No Image</span>
+                </div>
+                {% endif %}
+                
+                <div class="vto-product-info">
+                    <span class="vto-badge mb-2">✨ VTO Available</span>
+                    <h5 class="mt-2">{{ product.title|truncatewords:8 }}</h5>
+                    <p class="text-primary fw-bold mb-0">${{ product.price }}</p>
+                    {% if product.rating %}
+                    <small class="text-muted">⭐ {{ product.rating }} ({{ product.review_count }})</small>
+                    {% endif %}
+                </div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</section>
+{% endif %}
+{% endfor %}
+
+<!-- How It Works -->
+<section class="container my-5 py-5 bg-light rounded">
+    <h3 class="text-center mb-4">How It Works</h3>
+    
+    <div class="row text-center">
+        <div class="col-md-3">
+            <div class="mb-3 fs-1">📷</div>
+            <h5>1. Upload or Use Camera</h5>
+            <p class="text-muted">Take a selfie or upload your photo</p>
+        </div>
+        <div class="col-md-3">
+            <div class="mb-3 fs-1">🤖</div>
+            <h5>2. AI Detection</h5>
+            <p class="text-muted">Our AI detects your facial landmarks</p>
+        </div>
+        <div class="col-md-3">
+            <div class="mb-3 fs-1">✨</div>
+            <h5>3. Try Products</h5>
+            <p class="text-muted">See products overlaid on your photo</p>
+        </div>
+        <div class="col-md-3">
+            <div class="mb-3 fs-1">🛒</div>
+            <h5>4. Buy with Confidence</h5>
+            <p class="text-muted">Purchase what looks best on you</p>
+        </div>
+    </div>
+</section>
+
+<!-- Privacy Notice -->
+<section class="container my-5 text-center">
+    <div class="alert alert-info">
+        <i class="fas fa-shield-alt"></i>
+        <strong>Privacy First:</strong> Your photos are stored securely and automatically deleted after 30 days. 
+        We never share your images with third parties.
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function scrollToCategory(categoryId) {
+    const element = document.getElementById('category-' + categoryId);
+    if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+</script>
+{% endblock %}
+

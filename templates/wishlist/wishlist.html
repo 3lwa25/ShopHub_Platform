@@ -1,0 +1,379 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Wishlist - Shop Hub{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex flex-wrap justify-content-between align-items-center mb-4 gap-3">
+        <div>
+            <h1 class="h3 mb-0">My Wishlist</h1>
+            <p class="text-muted mb-0">{{ wishlist.item_count }} item{{ wishlist.item_count|pluralize }}</p>
+        </div>
+        <div class="d-flex gap-2">
+            <button type="button" class="btn btn-outline-secondary btn-sm" id="shareWishlistBtn" data-share-url="{{ share_url }}">
+                <i class="fas fa-share-alt"></i> Share
+            </button>
+            {% if wishlist.item_count > 0 %}
+            <form method="post" action="{% url 'wishlist:clear' %}" class="d-inline" onsubmit="return confirm('Are you sure you want to clear your entire wishlist?');">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-outline-danger btn-sm">
+                    <i class="fas fa-trash"></i> Clear All
+                </button>
+            </form>
+            {% endif %}
+        </div>
+    </div>
+
+    {% if items %}
+    <!-- Filters and Sort -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <div class="row align-items-center">
+                <div class="col-md-6">
+                    <form method="get" class="d-flex gap-2">
+                        <select name="stock" class="form-select form-select-sm" style="max-width: 200px;">
+                            <option value="">All Items</option>
+                            <option value="in_stock" {% if stock_filter == 'in_stock' %}selected{% endif %}>In Stock</option>
+                            <option value="out_of_stock" {% if stock_filter == 'out_of_stock' %}selected{% endif %}>Out of Stock</option>
+                        </select>
+                        <select name="sort" class="form-select form-select-sm" style="max-width: 200px;">
+                            <option value="recent" {% if sort_by == 'recent' %}selected{% endif %}>Recently Added</option>
+                            <option value="price_low" {% if sort_by == 'price_low' %}selected{% endif %}>Price: Low to High</option>
+                            <option value="price_high" {% if sort_by == 'price_high' %}selected{% endif %}>Price: High to Low</option>
+                            <option value="name" {% if sort_by == 'name' %}selected{% endif %}>Name: A-Z</option>
+                            <option value="priority" {% if sort_by == 'priority' %}selected{% endif %}>Priority</option>
+                        </select>
+                        <button type="submit" class="btn btn-primary btn-sm">Apply</button>
+                    </form>
+                </div>
+                <div class="col-md-6 text-end">
+                    <div class="btn-group" role="group">
+                        <a href="?view=grid&sort={{ sort_by }}&stock={{ stock_filter }}" 
+                           class="btn btn-sm btn-outline-primary {% if view_type == 'grid' %}active{% endif %}">
+                            <i class="fas fa-th"></i> Grid
+                        </a>
+                        <a href="?view=list&sort={{ sort_by }}&stock={{ stock_filter }}" 
+                           class="btn btn-sm btn-outline-primary {% if view_type == 'list' %}active{% endif %}">
+                            <i class="fas fa-list"></i> List
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Wishlist Items -->
+    {% if view_type == 'grid' %}
+    <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4 wishlist-grid">
+        {% for item in items %}
+        <div class="col wishlist-item-card" data-item-id="{{ item.id }}">
+            <div class="card h-100 shadow-sm position-relative">
+                <div class="position-relative">
+                    {% if item.product.images.all %}
+                        <img src="{{ item.product.images.first.image.url }}" 
+                             class="card-img-top" 
+                             alt="{{ item.product.title }}"
+                             style="height: 200px; object-fit: cover;">
+                    {% else %}
+                        <div class="bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                            <i class="fas fa-image fa-3x text-muted"></i>
+                        </div>
+                    {% endif %}
+                    <button class="btn btn-sm btn-danger position-absolute top-0 end-0 m-2 remove-wishlist-btn" 
+                            data-item-id="{{ item.id }}"
+                            style="border-radius: 50%; width: 32px; height: 32px; padding: 0;">
+                        <i class="fas fa-times"></i>
+                    </button>
+                    {% if not item.is_in_stock %}
+                        <span class="badge bg-danger position-absolute top-0 start-0 m-2">Out of Stock</span>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    <h6 class="card-title">
+                        <a href="{% url 'products:product_detail' item.product.slug %}" class="text-decoration-none">
+                            {{ item.product.title|truncatewords:8 }}
+                        </a>
+                    </h6>
+                    <p class="card-text mb-2">
+                        <span class="h5 text-primary">EGP {{ item.product.price }}</span>
+                        {% if item.product.is_on_sale %}
+                            <small class="text-muted text-decoration-line-through ms-2">EGP {{ item.product.original_price }}</small>
+                        {% endif %}
+                    </p>
+                    {% if item.notes %}
+                        <p class="small text-muted mb-2"><i class="fas fa-sticky-note"></i> {{ item.notes|truncatewords:10 }}</p>
+                    {% endif %}
+                </div>
+                <div class="card-footer bg-white">
+                    <div class="d-grid gap-2">
+                        {% if item.is_in_stock %}
+                            <button class="btn btn-primary btn-sm move-to-cart-btn" data-item-id="{{ item.id }}">
+                                <i class="fas fa-shopping-cart"></i> Move to Cart
+                            </button>
+                        {% else %}
+                            <button class="btn btn-secondary btn-sm" disabled>
+                                <i class="fas fa-ban"></i> Out of Stock
+                            </button>
+                        {% endif %}
+                        <a href="{% url 'wishlist:edit_item' item.id %}" class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-edit"></i> Edit Notes
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <!-- List View -->
+    <div class="card shadow-sm">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th>Product</th>
+                            <th>Price</th>
+                            <th>Stock</th>
+                            <th>Notes</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in items %}
+                        <tr class="wishlist-item-card" data-item-id="{{ item.id }}">
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    {% if item.product.images.all %}
+                                        <img src="{{ item.product.images.first.image.url }}" 
+                                             class="me-3" 
+                                             style="width: 60px; height: 60px; object-fit: cover;"
+                                             alt="{{ item.product.title }}">
+                                    {% endif %}
+                                    <div>
+                                        <a href="{% url 'products:product_detail' item.product.slug %}" class="text-decoration-none fw-bold">
+                                            {{ item.product.title }}
+                                        </a>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="h6 mb-0">EGP {{ item.product.price }}</span>
+                                {% if item.product.is_on_sale %}
+                                    <small class="text-muted text-decoration-line-through d-block">EGP {{ item.product.original_price }}</small>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if item.is_in_stock %}
+                                    <span class="badge bg-success">In Stock</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Out of Stock</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if item.notes %}
+                                    <small class="text-muted">{{ item.notes|truncatewords:5 }}</small>
+                                {% else %}
+                                    <span class="text-muted">-</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group btn-group-sm">
+                                    {% if item.is_in_stock %}
+                                        <button class="btn btn-primary move-to-cart-btn" data-item-id="{{ item.id }}" title="Move to Cart">
+                                            <i class="fas fa-shopping-cart"></i>
+                                        </button>
+                                    {% endif %}
+                                    <a href="{% url 'wishlist:edit_item' item.id %}" class="btn btn-outline-secondary" title="Edit">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button class="btn btn-danger remove-wishlist-btn" data-item-id="{{ item.id }}" title="Remove">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% else %}
+    <!-- Empty Wishlist -->
+    <div class="card shadow-sm">
+        <div class="card-body text-center py-5">
+            <i class="fas fa-heart fa-4x text-muted mb-3"></i>
+            <h4 class="mb-3">Your wishlist is empty</h4>
+            <p class="text-muted mb-4">Start adding products you love to your wishlist!</p>
+            <a href="{% url 'products:product_list' %}" class="btn btn-primary">
+                <i class="fas fa-shopping-bag"></i> Start Shopping
+            </a>
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const csrfToken = getCsrfToken();
+
+    document.querySelectorAll('.remove-wishlist-btn').forEach(btn => {
+        btn.addEventListener('click', function () {
+            const itemId = this.dataset.itemId;
+            if (!itemId) return;
+
+            fetch(`/wishlist/remove/${itemId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    removeWishlistCard(itemId);
+                    if (typeof updateWishlistBadge === 'function') {
+                        updateWishlistBadge(data.wishlist_count);
+                    }
+                    safeToast(data.message || 'Removed from wishlist', 'info');
+                } else {
+                    safeToast(data.message || 'Could not remove item', 'error');
+                }
+            })
+            .catch(() => safeToast('Unable to remove item. Please try again.', 'error'));
+        });
+    });
+
+    document.querySelectorAll('.move-to-cart-btn').forEach(btn => {
+        let isProcessing = false;
+        btn.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            if (isProcessing) return;
+            isProcessing = true;
+            
+            const itemId = this.dataset.itemId;
+            if (!itemId) {
+                isProcessing = false;
+                return;
+            }
+            
+            // Disable button during processing
+            this.disabled = true;
+
+            fetch(`/wishlist/move-to-cart/${itemId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken,
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                isProcessing = false;
+                if (data.success) {
+                    removeWishlistCard(itemId);
+                    if (typeof updateWishlistBadge === 'function') {
+                        updateWishlistBadge(data.wishlist_count);
+                    }
+                    updateCartBadge(data.cart_count);
+                    safeToast(data.message || 'Moved to cart', 'success');
+                } else {
+                    btn.disabled = false;
+                    safeToast(data.message || 'Unable to move to cart', 'error');
+                }
+            })
+            .catch(() => {
+                isProcessing = false;
+                btn.disabled = false;
+                safeToast('Unable to move item to cart.', 'error');
+            });
+        });
+    });
+
+    const shareBtn = document.getElementById('shareWishlistBtn');
+    if (shareBtn) {
+        shareBtn.addEventListener('click', function () {
+            const shareUrl = this.dataset.shareUrl;
+            if (!shareUrl) return;
+
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Check out my wishlist!',
+                    url: shareUrl,
+                }).catch(() => safeToast('Sharing cancelled', 'info'));
+            } else if (navigator.clipboard) {
+                navigator.clipboard.writeText(shareUrl)
+                    .then(() => safeToast('Wishlist link copied to clipboard', 'success'))
+                    .catch(() => fallbackShare(shareUrl));
+            } else {
+                fallbackShare(shareUrl);
+            }
+        });
+    }
+});
+
+function removeWishlistCard(itemId) {
+    const target = document.querySelector(`[data-item-id="${itemId}"]`);
+    if (target) {
+        target.remove();
+    }
+
+    if (!document.querySelector('[data-item-id]')) {
+        window.location.reload();
+    }
+}
+
+function getCsrfToken() {
+    if (typeof getCookie === 'function') {
+        return getCookie('csrftoken');
+    }
+    const name = 'csrftoken';
+    const cookies = document.cookie ? document.cookie.split(';') : [];
+    for (let i = 0; i < cookies.length; i += 1) {
+        const cookie = cookies[i].trim();
+        if (cookie.substring(0, name.length + 1) === `${name}=`) {
+            return decodeURIComponent(cookie.substring(name.length + 1));
+        }
+    }
+    return '';
+}
+
+function fallbackShare(url) {
+    const tempInput = document.createElement('input');
+    tempInput.value = url;
+    document.body.appendChild(tempInput);
+    tempInput.select();
+    document.execCommand('copy');
+    document.body.removeChild(tempInput);
+    safeToast('Wishlist link copied to clipboard', 'success');
+}
+
+function updateCartBadge(count) {
+    const cartCountEl = document.querySelector('.cart-count');
+    if (!cartCountEl || typeof count === 'undefined') return;
+    cartCountEl.textContent = count;
+    if (count > 0) {
+        cartCountEl.classList.remove('d-none');
+    } else {
+        cartCountEl.classList.add('d-none');
+    }
+}
+
+function safeToast(message, type = 'info') {
+    if (typeof showToast === 'function') {
+        showToast(message, type);
+    } else {
+        alert(message);
+    }
+}
+</script>
+{% endblock %}
+{% endblock %}
+

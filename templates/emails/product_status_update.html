@@ -1,0 +1,30 @@
+{% extends 'emails/base_email.html' %}
+
+{% block subject %}Product status update{% endblock %}
+
+{% block content %}
+<span class="badge">Product Moderation</span>
+<h2>{{ product.title }}</h2>
+<p>The moderation team reviewed your product listing.</p>
+
+<table class="details-table">
+    <tr>
+        <th>Status</th>
+        <td>{% if is_active %}Active &amp; visible ✅{% else %}Inactive / hidden ❌{% endif %}</td>
+    </tr>
+    <tr>
+        <th>Featured</th>
+        <td>{% if is_featured %}Featured on storefront ⭐{% else %}Standard listing{% endif %}</td>
+    </tr>
+</table>
+
+{% if reason %}
+    <div style="background-color: #f0fdf4; border-radius: 8px; padding: 16px; border: 1px solid #bbf7d0; margin-top: 16px;">
+        <strong>Notes:</strong>
+        <p style="margin: 8px 0 0 0;">{{ reason }}</p>
+    </div>
+{% endif %}
+
+<p style="margin-top: 16px;">You can manage this product and apply further updates from your seller dashboard.</p>
+<a href="{{ site_url }}/products/seller/products/" class="btn">Manage Products</a>
+{% endblock %}

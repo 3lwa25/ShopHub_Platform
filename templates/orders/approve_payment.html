@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Approve Payment - Shop Hub{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0"><i class="fas fa-check-circle"></i> Approve Payment</h3>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <h5>Order: {{ order.order_number }}</h5>
+                        <p class="mb-0">Total Amount: <strong>EGP {{ order.total_amount|floatformat:2 }}</strong></p>
+                        <p class="mb-0">Buyer: {{ order.buyer.email }}</p>
+                        <p class="mb-0">Current Status: <span class="badge bg-warning">{{ order.get_payment_status_display }}</span></p>
+                    </div>
+                    
+                    {% if transaction %}
+                    <div class="mb-3">
+                        <h5>Transaction Details</h5>
+                        <table class="table">
+                            <tr>
+                                <td>Transaction ID:</td>
+                                <td>{{ transaction.transaction_id }}</td>
+                            </tr>
+                            <tr>
+                                <td>Amount:</td>
+                                <td>EGP {{ transaction.amount|floatformat:2 }}</td>
+                            </tr>
+                            <tr>
+                                <td>Payment Method:</td>
+                                <td>{{ transaction.get_payment_method_display }}</td>
+                            </tr>
+                            <tr>
+                                <td>Status:</td>
+                                <td><span class="badge bg-{{ transaction.status }}">{{ transaction.get_status_display }}</span></td>
+                            </tr>
+                        </table>
+                    </div>
+                    {% endif %}
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="alert alert-warning">
+                            <i class="fas fa-exclamation-triangle"></i> 
+                            Approving this payment will:
+                            <ul class="mb-0 mt-2">
+                                <li>Mark payment as completed</li>
+                                <li>Generate invoice automatically</li>
+                                <li>Send invoice to buyer's email</li>
+                                <li>Update order status</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success btn-lg">
+                                <i class="fas fa-check"></i> Approve Payment & Send Invoice
+                            </button>
+                            <a href="{% url 'orders:buyer_order_detail' order.order_number %}" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+
+{% block title %}Request Refund - Order {{ order.order_number }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-xl-7">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+                    <div>
+                        <h1 class="h5 mb-0">Request a Refund</h1>
+                        <p class="text-muted small mb-0">Provide details so our support team can review your request swiftly.</p>
+                    </div>
+                    <a href="{% url 'orders:buyer_order_detail' order.order_number %}" class="btn btn-outline-secondary btn-sm">Back to Order</a>
+                </div>
+                <div class="card-body">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        {{ form.non_field_errors }}
+                        <div class="mb-3">
+                            <label class="form-label">Amount to refund (EGP)</label>
+                            {{ form.amount }}
+                            {% for error in form.amount.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Tell us what happened</label>
+                            {{ form.reason }}
+                            {% for error in form.reason.errors %}
+                                <div class="text-danger small">{{ error }}</div>
+                            {% endfor %}
+                        </div>
+                        <p class="text-muted small">Our support specialists will review your request within 24-48 hours. You will receive an email confirmation once a decision has been made.</p>
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-danger">Submit Refund Request</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

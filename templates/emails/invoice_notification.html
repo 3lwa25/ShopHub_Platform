@@ -1,0 +1,27 @@
+{% extends 'emails/base_email.html' %}
+
+{% block subject %}Invoice ready - {{ order.order_number }}{% endblock %}
+
+{% block content %}
+<span class="badge">Invoice Available</span>
+<h2>Your ShopHub invoice is ready</h2>
+<p>We generated a branded invoice for order <strong>{{ order.order_number }}</strong>. It includes payment status, delivery address, and warranty guidance. Download it any time using the link below or grab the attached PDF.</p>
+
+<table class="details-table">
+    <tr>
+        <th>Invoice number</th>
+        <td>{{ invoice.invoice_number }}</td>
+    </tr>
+    <tr>
+        <th>Total amount</th>
+        <td>EGP {{ invoice.total_amount|floatformat:2 }}</td>
+    </tr>
+    <tr>
+        <th>Status</th>
+        <td>{% if invoice.is_paid %}Paid{% else %}Pending{% endif %}</td>
+    </tr>
+</table>
+
+<a href="{{ invoice_url }}" class="btn">Download Invoice</a>
+<p style="margin-top: 16px;">Keep this PDF for your 12-month manufacturer warranty window and for any future support requests.</p>
+{% endblock %}

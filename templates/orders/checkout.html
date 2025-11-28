@@ -1,0 +1,278 @@
+{% extends 'base.html' %}
+
+{% block title %}Checkout - Shop Hub{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row g-4">
+        <div class="col-lg-7">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white border-0">
+                    <h1 class="h4 mb-0">Shipping Information</h1>
+                </div>
+                <div class="card-body">
+                    {% if saved_addresses %}
+                    <div class="mb-4">
+                        <h5 class="mb-3">Saved Addresses</h5>
+                        <div class="row g-2">
+                            {% for address in saved_addresses %}
+                            <div class="col-md-6">
+                                <div class="card border saved-address-card" data-address-id="{{ address.id }}">
+                                    <div class="card-body">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="radio" name="saved_address" 
+                                                   id="address_{{ address.id }}" value="{{ address.id }}"
+                                                   {% if address.is_default %}checked{% endif %}>
+                                            <label class="form-check-label w-100" for="address_{{ address.id }}">
+                                                <div class="fw-semibold">{{ address.full_name }}</div>
+                                                <div class="small text-muted">{{ address.address_line1 }}</div>
+                                                {% if address.address_line2 %}<div class="small text-muted">{{ address.address_line2 }}</div>{% endif %}
+                                                <div class="small text-muted">{{ address.city }}, {{ address.state }} {{ address.postal_code }}</div>
+                                                <div class="small text-muted">{{ address.country }}</div>
+                                                <div class="small text-muted">Phone: {{ address.phone }}</div>
+                                                {% if address.is_default %}<span class="badge bg-primary mt-1">Default</span>{% endif %}
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                        <div class="form-check mt-3 mb-3">
+                            <input class="form-check-input" type="radio" name="saved_address" id="address_new" value="new" checked>
+                            <label class="form-check-label" for="address_new">
+                                Use a new address
+                            </label>
+                        </div>
+                        <hr>
+                    </div>
+                    {% endif %}
+                    
+                    <form method="post" novalidate id="checkoutForm">
+                        {% csrf_token %}
+                        {{ form.saved_address_id }}
+                        <div class="row g-3" id="addressFields">
+                            <div class="col-md-12">
+                                <label class="form-label">{{ form.full_name.label }}{% if form.full_name.field.required %} *{% endif %}</label>
+                                {{ form.full_name }}
+                                {% for error in form.full_name.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">{{ form.email.label }}{% if form.email.field.required %} *{% endif %}</label>
+                                {{ form.email }}
+                                {% for error in form.email.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">{{ form.phone.label }}{% if form.phone.field.required %} *{% endif %}</label>
+                                {{ form.phone }}
+                                {% for error in form.phone.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label">{{ form.address_line1.label }}{% if form.address_line1.field.required %} *{% endif %}</label>
+                                {{ form.address_line1 }}
+                                {% for error in form.address_line1.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label">{{ form.address_line2.label }}</label>
+                                {{ form.address_line2 }}
+                                {% for error in form.address_line2.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">{{ form.city.label }}{% if form.city.field.required %} *{% endif %}</label>
+                                {{ form.city }}
+                                {% for error in form.city.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">{{ form.state.label }}</label>
+                                {{ form.state }}
+                                {% for error in form.state.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">{{ form.country.label }}{% if form.country.field.required %} *{% endif %}</label>
+                                {{ form.country }}
+                                {% for error in form.country.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">{{ form.postal_code.label }}</label>
+                                {{ form.postal_code }}
+                                {% for error in form.postal_code.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                            </div>
+                        </div>
+                        <div class="row g-3 mt-2">
+                            <div class="col-md-12">
+                                <div class="form-check">
+                                    {{ form.save_address }}
+                                    <label class="form-check-label" for="{{ form.save_address.id_for_label }}">
+                                        {{ form.save_address.label }}
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label">{{ form.payment_method.label }}{% if form.payment_method.field.required %} *{% endif %}</label>
+                                <div class="mt-2">
+                                    {% for choice in form.payment_method %}
+                                        <div class="form-check">
+                                            {{ choice.tag }}
+                                            <label class="form-check-label" for="{{ choice.id_for_label }}">
+                                                {{ choice.choice_label }}
+                                            </label>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                                {% for error in form.payment_method.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                            </div>
+                            <div class="col-md-12">
+                                <label class="form-label">{{ form.customer_notes.label }}</label>
+                                {{ form.customer_notes }}
+                                {% for error in form.customer_notes.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                            </div>
+                        </div>
+                        <div class="mt-4 d-flex justify-content-end">
+                            <button type="submit" class="btn btn-primary btn-lg">Place Order</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white border-0">
+                    <h2 class="h5 mb-0">Order Summary</h2>
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush">
+                        {% for item in cart_items %}
+                            <li class="list-group-item d-flex justify-content-between align-items-start">
+                                <div>
+                                    <div class="fw-semibold">{{ item.product.title|truncatechars:60 }}</div>
+                                    <div class="small text-muted">Qty: {{ item.quantity }}</div>
+                                </div>
+                                <div class="text-end">
+                                    <div>EGP {{ item.product.price|floatformat:2 }}</div>
+                                    <div class="small text-muted">Subtotal: EGP {{ item.subtotal|floatformat:2 }}</div>
+                                </div>
+                            </li>
+                        {% empty %}
+                            <li class="list-group-item text-muted text-center">Your cart is empty.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <div class="card-footer bg-white border-0">
+                    <div class="d-flex justify-content-between mb-2">
+                        <span>Subtotal:</span>
+                        <span>EGP {{ cart_total|floatformat:2 }}</span>
+                    </div>
+                    {% if applied_coupon %}
+                    <div class="d-flex justify-content-between mb-2 text-success">
+                        <span>
+                            <i class="fas fa-tag me-1"></i>
+                            Discount ({{ applied_coupon.code }}):
+                        </span>
+                        <span class="fw-bold">-EGP {{ discount_amount|floatformat:2 }}</span>
+                    </div>
+                    {% endif %}
+                    <hr>
+                    <div class="d-flex justify-content-between fw-semibold h5">
+                        <span>Total:</span>
+                        <span class="text-primary">EGP {{ final_total|floatformat:2 }}</span>
+                    </div>
+                    <p class="small text-muted mt-2 mb-0">By placing this order, you agree to our terms and conditions.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const savedAddressRadios = document.querySelectorAll('input[name="saved_address"]');
+    const addressFields = document.getElementById('addressFields');
+    const savedAddressIdField = document.getElementById('id_saved_address_id');
+    const savedAddressCards = document.querySelectorAll('.saved-address-card');
+    
+    // Address data from saved addresses
+    const savedAddresses = {
+        {% for address in saved_addresses %}
+        {{ address.id }}: {
+            full_name: "{{ address.full_name|escapejs }}",
+            phone: "{{ address.phone|escapejs }}",
+            address_line1: "{{ address.address_line1|escapejs }}",
+            address_line2: "{{ address.address_line2|escapejs }}",
+            city: "{{ address.city|escapejs }}",
+            state: "{{ address.state|escapejs }}",
+            country: "{{ address.country|escapejs }}",
+            postal_code: "{{ address.postal_code|escapejs }}"
+        },
+        {% endfor %}
+    };
+    
+    function fillAddressFields(addressData) {
+        document.getElementById('id_full_name').value = addressData.full_name || '';
+        document.getElementById('id_phone').value = addressData.phone || '';
+        document.getElementById('id_address_line1').value = addressData.address_line1 || '';
+        document.getElementById('id_address_line2').value = addressData.address_line2 || '';
+        document.getElementById('id_city').value = addressData.city || '';
+        document.getElementById('id_state').value = addressData.state || '';
+        document.getElementById('id_country').value = addressData.country || '';
+        document.getElementById('id_postal_code').value = addressData.postal_code || '';
+    }
+    
+    function toggleAddressFields(disabled) {
+        const fields = addressFields.querySelectorAll('input, select, textarea');
+        fields.forEach(field => {
+            field.disabled = disabled;
+        });
+    }
+    
+    savedAddressRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            if (this.value === 'new') {
+                // Use new address - enable fields
+                savedAddressIdField.value = '';
+                toggleAddressFields(false);
+                // Clear fields
+                fillAddressFields({
+                    full_name: '',
+                    phone: '',
+                    address_line1: '',
+                    address_line2: '',
+                    city: '',
+                    state: '',
+                    country: '',
+                    postal_code: ''
+                });
+            } else {
+                // Use saved address - fill and disable fields
+                const addressId = parseInt(this.value);
+                savedAddressIdField.value = addressId;
+                if (savedAddresses[addressId]) {
+                    fillAddressFields(savedAddresses[addressId]);
+                    toggleAddressFields(true);
+                }
+            }
+        });
+    });
+    
+    // Handle card clicks
+    savedAddressCards.forEach(card => {
+        card.addEventListener('click', function(e) {
+            if (e.target.tagName !== 'INPUT' && e.target.tagName !== 'LABEL') {
+                const radio = this.querySelector('input[type="radio"]');
+                if (radio) {
+                    radio.checked = true;
+                    radio.dispatchEvent(new Event('change'));
+                }
+            }
+        });
+    });
+    
+    // Initialize - if default address is selected, fill it
+    const defaultRadio = document.querySelector('input[name="saved_address"]:checked');
+    if (defaultRadio && defaultRadio.value !== 'new') {
+        defaultRadio.dispatchEvent(new Event('change'));
+    }
+});
+</script>
+{% endblock %}
+{% endblock %}

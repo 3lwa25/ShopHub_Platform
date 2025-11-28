@@ -1,0 +1,384 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Try On: {{ product.title }} - Shop Hub{% endblock %}
+
+{% block extra_css %}
+<style>
+    .vto-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+    
+    .vto-main {
+        display: grid;
+        grid-template-columns: 1fr 400px;
+        gap: 30px;
+        margin-top: 20px;
+    }
+    
+    #vto-canvas-container {
+        position: relative;
+        background: #1a1a2e;
+        border-radius: 12px;
+        overflow: hidden;
+        aspect-ratio: 4/3;
+    }
+    
+    #vto-canvas {
+        width: 100%;
+        height: 100%;
+        display: block;
+    }
+    
+    #camera-view {
+        width: 100%;
+        height: 100%;
+        display: none;
+    }
+    
+    .vto-controls {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .vto-btn {
+        width: 100%;
+        padding: 12px;
+        margin-bottom: 10px;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .vto-btn-primary {
+        background: #667eea;
+        color: white;
+    }
+    
+    .vto-btn-primary:hover {
+        background: #5a67d8;
+        transform: translateY(-2px);
+    }
+    
+    .vto-btn-secondary {
+        background: #e2e8f0;
+        color: #2d3748;
+    }
+    
+    .vto-loading {
+        display: none;
+        text-align: center;
+        padding: 40px 20px;
+        background: rgba(26, 26, 46, 0.95);
+        border-radius: 12px;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 1000;
+        min-width: 300px;
+    }
+    
+    .vto-loading p {
+        color: white;
+        font-size: 16px;
+        font-weight: 500;
+        margin-top: 15px;
+    }
+    
+    .vto-loading .spinner-border {
+        width: 3rem;
+        height: 3rem;
+        border-width: 0.3em;
+    }
+    
+    .vto-error {
+        display: none;
+        background: #fee;
+        border: 2px solid #fcc;
+        border-radius: 8px;
+        padding: 15px;
+        margin: 15px 0;
+        color: #c33;
+    }
+    
+    .vto-success {
+        display: none;
+        background: #efe;
+        border: 2px solid #cfc;
+        border-radius: 8px;
+        padding: 15px;
+        margin: 15px 0;
+        color: #3c3;
+    }
+    
+    .product-info-card {
+        background: #f7fafc;
+        border-radius: 8px;
+        padding: 15px;
+        margin-top: 20px;
+    }
+    
+    @media (max-width: 768px) {
+        .vto-main {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="vto-container">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center">
+        <h2>👗 Virtual Try-On</h2>
+        <a href="{% url 'virtual_tryon:vto_home' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back
+        </a>
+    </div>
+    
+    <!-- Main VTO Interface -->
+    <div class="vto-main">
+        <!-- Canvas Area -->
+        <div>
+            <div id="vto-canvas-container">
+                <canvas id="vto-canvas"></canvas>
+                <video id="camera-view" autoplay playsinline></video>
+            </div>
+            
+            <div class="vto-loading" id="vto-loading">
+                <div class="spinner-border text-primary" role="status">
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <p class="mt-2" id="vto-loading-text">Initializing Virtual Try-On...</p>
+            </div>
+            
+            <div class="vto-error" id="vto-error"></div>
+            <div class="vto-success" id="vto-success"></div>
+        </div>
+        
+        <!-- Controls Sidebar -->
+        <div class="vto-controls">
+            <h5 class="mb-3">Controls</h5>
+            
+            <!-- Upload Photo -->
+            <button class="vto-btn vto-btn-primary" onclick="VTO.openFileUpload()">
+                <i class="fas fa-upload"></i> Upload Photo
+            </button>
+            <input type="file" id="photo-upload" accept="image/*" style="display: none;" onchange="VTO.handleFileUpload(event)">
+            <small class="text-muted d-block mt-2 mb-3 text-center">
+                <i class="fas fa-info-circle"></i> 
+                <span id="upload-hint">
+                    {% if vto_asset.placement_mode == 'room' %}
+                        Upload a room or space photo to place this product
+                    {% elif vto_asset.placement_mode == 'face' %}
+                        Photo must contain a visible face
+                    {% else %}
+                        Upload photo with face or room - auto-detected
+                    {% endif %}
+                </span>
+            </small>
+            
+            <!-- Use Camera -->
+            <button class="vto-btn vto-btn-primary" onclick="VTO.startCamera()">
+                <i class="fas fa-camera"></i> Use Camera
+            </button>
+            
+            <!-- Capture Photo -->
+            <button class="vto-btn vto-btn-secondary" id="btn-capture" style="display: none;" onclick="VTO.capturePhoto()">
+                <i class="fas fa-camera"></i> Capture Photo
+            </button>
+            
+            <!-- Stop Camera -->
+            <button class="vto-btn vto-btn-secondary" id="btn-stop-camera" style="display: none;" onclick="VTO.stopCamera()">
+                <i class="fas fa-stop"></i> Stop Camera
+            </button>
+            
+            <!-- Record Video (PlanetVA-style) -->
+            <button class="vto-btn vto-btn-primary" id="btn-record-video" style="display: none;" onclick="if(window.VTO) VTO.startRecording()">
+                <i class="fas fa-video"></i> Record Video
+            </button>
+            
+            <!-- Stop Recording -->
+            <button class="vto-btn vto-btn-danger" id="btn-stop-recording" style="display: none;" onclick="if(window.VTO) VTO.stopRecording()">
+                <i class="fas fa-stop-circle"></i> Stop Recording
+            </button>
+            
+            <hr>
+            
+            <!-- Save Result -->
+            <button class="vto-btn vto-btn-primary" id="btn-save" style="display: none;" onclick="VTO.saveResult()">
+                <i class="fas fa-save"></i> Save Result
+            </button>
+            
+            <!-- Download Image -->
+            <button class="vto-btn vto-btn-secondary" id="btn-download" style="display: none;" onclick="VTO.downloadImage()">
+                <i class="fas fa-download"></i> Download Image
+            </button>
+            
+            <!-- Reset -->
+            <button class="vto-btn vto-btn-secondary" onclick="VTO.reset()">
+                <i class="fas fa-redo"></i> Start Over
+            </button>
+            
+            <hr>
+            
+            <!-- Manual Adjustment Controls -->
+            <div id="vto-manual-controls" style="display: none;">
+                <h6 class="mb-3">
+                    <i class="fas fa-sliders-h"></i> Manual Adjustments
+                </h6>
+                
+                <!-- Position Controls -->
+                <div class="mb-3">
+                    <label class="form-label small">
+                        <i class="fas fa-arrows-alt"></i> Position X
+                        <span id="vto-pos-x-value" class="badge bg-secondary ms-2">0</span>
+                    </label>
+                    <input type="range" class="form-range" id="vto-pos-x" min="0" max="1000" value="0" step="1">
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label small">
+                        <i class="fas fa-arrows-alt"></i> Position Y
+                        <span id="vto-pos-y-value" class="badge bg-secondary ms-2">0</span>
+                    </label>
+                    <input type="range" class="form-range" id="vto-pos-y" min="0" max="1000" value="0" step="1">
+                </div>
+                
+                <!-- Size Control -->
+                <div class="mb-3">
+                    <label class="form-label small">
+                        <i class="fas fa-expand-arrows-alt"></i> Size
+                        <span id="vto-size-value" class="badge bg-secondary ms-2">100%</span>
+                    </label>
+                    <input type="range" class="form-range" id="vto-size" min="30" max="300" value="100" step="1">
+                </div>
+                
+                <!-- Rotation Control -->
+                <div class="mb-3">
+                    <label class="form-label small">
+                        <i class="fas fa-sync-alt"></i> Rotation
+                        <span id="vto-rotation-value" class="badge bg-secondary ms-2">0°</span>
+                    </label>
+                    <input type="range" class="form-range" id="vto-rotation" min="-180" max="180" value="0" step="1">
+                </div>
+                
+                <!-- Opacity Control -->
+                <div class="mb-3">
+                    <label class="form-label small">
+                        <i class="fas fa-adjust"></i> Opacity
+                        <span id="vto-opacity-value" class="badge bg-secondary ms-2">90%</span>
+                    </label>
+                    <input type="range" class="form-range" id="vto-opacity" min="0" max="100" value="90" step="1">
+                </div>
+                
+                <!-- Advanced Controls -->
+                <div class="btn-group w-100 mb-3" role="group">
+                    <button class="btn btn-sm btn-outline-primary" id="vto-lock-aspect" onclick="VTO.toggleAspectLock()">
+                        <i class="fas fa-lock"></i> Locked
+                    </button>
+                    <button class="btn btn-sm btn-outline-primary" id="vto-snap-grid" onclick="VTO.toggleSnapGrid()">
+                        <i class="fas fa-th"></i> Snap Grid
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" id="vto-reset-transform" onclick="VTO.resetTransform()">
+                        <i class="fas fa-undo"></i> Reset
+                    </button>
+                </div>
+                
+                <div class="alert alert-info small mb-0">
+                    <i class="fas fa-info-circle"></i>
+                    <strong>Tip:</strong> You can also drag, resize, and rotate directly on the canvas!
+                </div>
+                
+                <!-- Keyboard Shortcuts Help -->
+                <div class="mt-3">
+                    <button class="btn btn-sm btn-outline-secondary w-100" type="button" data-bs-toggle="collapse" data-bs-target="#keyboard-shortcuts">
+                        <i class="fas fa-keyboard"></i> Keyboard Shortcuts
+                    </button>
+                    <div class="collapse mt-2" id="keyboard-shortcuts">
+                        <div class="card card-body small">
+                            <strong>Movement:</strong>
+                            <ul class="mb-2">
+                                <li>Arrow Keys: Move (1px)</li>
+                                <li>Shift + Arrows: Move fast (10px)</li>
+                            </ul>
+                            <strong>Resizing:</strong>
+                            <ul class="mb-2">
+                                <li>+ or =: Zoom in</li>
+                                <li>- or _: Zoom out</li>
+                                <li>Mouse Wheel: Zoom (on product)</li>
+                            </ul>
+                            <strong>Rotating:</strong>
+                            <ul class="mb-2">
+                                <li>R: Rotate clockwise (5°)</li>
+                                <li>Shift + R: Rotate counter-clockwise</li>
+                                <li>Shift (while rotating): Snap to 15°</li>
+                            </ul>
+                            <strong>Tools:</strong>
+                            <ul class="mb-0">
+                                <li>G: Toggle Snap to Grid</li>
+                                <li>L: Toggle Aspect Ratio Lock</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <hr>
+            
+            <!-- Product Info -->
+            <div class="product-info-card">
+                <h6>Trying On:</h6>
+                {% if product.images.first %}
+                <img src="{{ product.images.first.image.url }}" 
+                     alt="{{ product.title }}" 
+                     class="img-fluid rounded mb-2">
+                {% endif %}
+                <p class="mb-1"><strong>{{ product.title }}</strong></p>
+                <p class="text-primary fw-bold mb-2">${{ product.price }}</p>
+                <a href="{% url 'products:product_detail' product.slug %}" class="btn btn-sm btn-outline-primary w-100">
+                    View Product Details
+                </a>
+            </div>
+            
+            <!-- Privacy Notice -->
+            <div class="alert alert-info mt-3 small">
+                <i class="fas fa-shield-alt"></i>
+                Your photos are stored securely and auto-deleted after 30 days.
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden data -->
+<div id="vto-data" 
+     data-session-id="{{ session_id }}" 
+     data-product-id="{{ product.id }}"
+     data-vto-assets="{{ vto_asset.id }}"
+     data-overlay-url="{% if vto_asset and vto_asset.overlay_image %}{{ vto_asset.overlay_image.url }}{% else %}{% endif %}"
+     data-anchor-points='{% if vto_asset.anchor_points %}{{ vto_asset.anchor_points|safe }}{% else %}{}{% endif %}'
+     data-scale-factor="{{ vto_asset.scale_factor }}"
+     data-placement-mode="{{ vto_asset.placement_mode|default:'auto' }}"
+     style="display: none;">
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<!-- face-api.js -->
+<script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api@latest/dist/face-api.min.js"></script>
+<script src="{% static 'js/virtual-tryon.js' %}"></script>
+<script>
+// Initialize VTO on page load
+document.addEventListener('DOMContentLoaded', function() {
+    VTO.init();
+});
+</script>
+{% endblock %}
+

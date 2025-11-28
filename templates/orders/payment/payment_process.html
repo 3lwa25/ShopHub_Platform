@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+
+{% block title %}Complete Payment - Order {{ order.order_number }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row g-4">
+        <div class="col-lg-7">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+                    <h1 class="h5 mb-0">Enter Payment Details</h1>
+                    <a href="{% url 'orders:payment_method' order.order_number %}" class="btn btn-outline-secondary btn-sm">Change Method</a>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted small">This is a simulated payment flow for Phase 6. No real transaction will be submitted.</p>
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        {{ form.non_field_errors }}
+                        <div class="row g-3">
+                            {% for field in form %}
+                                <div class="col-md-6">
+                                    <label class="form-label">{{ field.label }}{% if field.field.required %} *{% endif %}</label>
+                                    {{ field }}
+                                    {% for error in field.errors %}
+                                        <div class="text-danger small">{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <div class="alert alert-info mt-4" role="alert">
+                            <i class="fas fa-lock"></i> Payment method "{{ payment_method|title }}" is currently operating in sandbox mode. Use any test card number to continue.
+                        </div>
+                        <div class="text-end">
+                            <button type="submit" class="btn btn-primary">Submit Payment</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white border-0">
+                    <h2 class="h6 mb-0">Order Summary</h2>
+                </div>
+                <div class="card-body">
+                    <p class="mb-1"><strong>Order:</strong> {{ order.order_number }}</p>
+                    <p class="mb-1"><strong>Total:</strong> EGP {{ order.total_amount|floatformat:2 }}</p>
+                    <p class="mb-1"><strong>Status:</strong> {{ order.get_status_display }}</p>
+                    <p class="mb-0"><strong>Payment Status:</strong> {{ order.get_payment_status_display }}</p>
+                </div>
+            </div>
+            <div class="card shadow-sm border-0 mt-3">
+                <div class="card-header bg-white border-0">
+                    <h2 class="h6 mb-0">Help & Support</h2>
+                </div>
+                <div class="card-body">
+                    <p class="small text-muted mb-3">If you encounter issues, contact our billing support team.</p>
+                    <a href="mailto:{{ support_email|default:'support@shophub.com' }}" class="btn btn-outline-primary btn-sm">Email Support</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

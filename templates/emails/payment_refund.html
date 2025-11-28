@@ -1,0 +1,33 @@
+{% extends 'emails/base_email.html' %}
+
+{% block subject %}Payment refunded - {{ order.order_number }}{% endblock %}
+
+{% block content %}
+<span class="badge">Refund Processed</span>
+<h2>Refund issued for order {{ order.order_number }}</h2>
+<p>We processed a refund related to your order. The details are included below.</p>
+
+<table class="details-table">
+    <tr>
+        <th>Amount refunded</th>
+        <td>EGP {{ transaction.refund_amount|floatformat:2 }}</td>
+    </tr>
+    <tr>
+        <th>Payment method</th>
+        <td>{{ transaction.get_payment_method_display }}</td>
+    </tr>
+    <tr>
+        <th>Status</th>
+        <td>{{ transaction.get_status_display }}</td>
+    </tr>
+    {% if transaction.refunded_at %}
+    <tr>
+        <th>Refunded at</th>
+        <td>{{ transaction.refunded_at|date:"M d, Y H:i" }}</td>
+    </tr>
+    {% endif %}
+</table>
+
+<p style="margin-top: 16px;">A refreshed invoice has been attached for your records.</p>
+<a href="{{ site_url }}/orders/my-orders/{{ order.order_number }}/" class="btn">View Order</a>
+{% endblock %}

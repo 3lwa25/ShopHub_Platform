@@ -1,0 +1,529 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}AI Shopping Assistant - {{ block.super }}{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Main Chat Container */
+    .chat-container {
+        height: 75vh;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    /* Chat Messages Area */
+    .chat-messages {
+        overflow-y: auto;
+        height: 100%;
+        padding: 1.5rem;
+        background: linear-gradient(to bottom, #f8fafc 0%, #f1f5f9 100%);
+        border-radius: 1rem;
+        scroll-behavior: smooth;
+    }
+    
+    .chat-messages::-webkit-scrollbar {
+        width: 8px;
+    }
+    
+    .chat-messages::-webkit-scrollbar-track {
+        background: #e2e8f0;
+        border-radius: 4px;
+    }
+    
+    .chat-messages::-webkit-scrollbar-thumb {
+        background: #94a3b8;
+        border-radius: 4px;
+    }
+    
+    .chat-messages::-webkit-scrollbar-thumb:hover {
+        background: #64748b;
+    }
+    
+    /* Chat Message Bubbles */
+    .chat-message {
+        max-width: 85%;
+        margin-bottom: 1rem;
+        animation: slideIn 0.3s ease-out;
+    }
+    
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    .chat-message .message-content {
+        padding: 0.875rem 1.125rem;
+        border-radius: 1rem;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+        line-height: 1.6;
+        word-wrap: break-word;
+    }
+    
+    .chat-message.user {
+        margin-left: auto;
+    }
+    
+    .chat-message.user .message-content {
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        color: white;
+        border-bottom-right-radius: 0.25rem;
+    }
+    
+    .chat-message.assistant .message-content {
+        background: white;
+        color: #1e293b;
+        border-bottom-left-radius: 0.25rem;
+        border-left: 3px solid #3b82f6;
+    }
+    
+    /* Avatars */
+    .bot-avatar, .user-avatar {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+    
+    .bot-avatar {
+        background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+        color: #0284c7;
+    }
+    
+    .user-avatar {
+        background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+        color: #1d4ed8;
+    }
+    
+    /* Typing Indicator */
+    .typing-dots {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        padding: 0.75rem 1rem;
+        background: white;
+        border-radius: 1rem;
+        box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+    }
+    
+    .typing-dots span {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #3b82f6;
+        animation: typing 1.4s infinite;
+    }
+    
+    .typing-dots span:nth-child(2) {
+        animation-delay: 0.2s;
+    }
+    
+    .typing-dots span:nth-child(3) {
+        animation-delay: 0.4s;
+    }
+    
+    @keyframes typing {
+        0%, 60%, 100% {
+            transform: translateY(0);
+            opacity: 0.7;
+        }
+        30% {
+            transform: translateY(-10px);
+            opacity: 1;
+        }
+    }
+    
+    /* Message Actions */
+    .message-actions {
+        display: flex;
+        gap: 0.5rem;
+    }
+    
+    .message-actions .btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+        border-radius: 0.375rem;
+        transition: all 0.2s;
+    }
+    
+    .message-actions .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    
+    .message-meta {
+        font-size: 0.75rem;
+        color: #64748b;
+    }
+    
+    /* Chat Input Area */
+    .chat-input-wrapper {
+        background: white;
+        border-top: 1px solid #e2e8f0;
+        padding: 1rem;
+    }
+    
+    #chatInput {
+        resize: none;
+        border: 2px solid #e2e8f0;
+        border-radius: 0.75rem;
+        padding: 0.75rem 1rem;
+        font-size: 0.95rem;
+        transition: all 0.3s;
+    }
+    
+    #chatInput:focus {
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+    
+    .send-btn {
+        min-width: 52px;
+        height: 52px;
+        border-radius: 0.75rem;
+        background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+        border: none;
+        color: white;
+        font-size: 1.25rem;
+        transition: all 0.3s;
+    }
+    
+    .send-btn:hover {
+        background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(37, 99, 235, 0.3);
+    }
+    
+    .send-btn:active {
+        transform: translateY(0);
+    }
+    
+    /* Sidebar */
+    .chat-sidebar {
+        max-height: 75vh;
+        overflow-y: auto;
+    }
+    
+    .chat-sidebar::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .chat-sidebar::-webkit-scrollbar-thumb {
+        background: #cbd5e1;
+        border-radius: 3px;
+    }
+    
+    .list-group-item {
+        border-left: 3px solid transparent;
+        transition: all 0.2s;
+    }
+    
+    .list-group-item:hover {
+        background: #f8fafc;
+        border-left-color: #3b82f6;
+    }
+    
+    .list-group-item.active {
+        background: linear-gradient(90deg, #eff6ff 0%, #dbeafe 100%);
+        border-left-color: #2563eb;
+        color: #1e293b;
+    }
+    
+    /* Quick Prompts */
+    .knowledge-pill {
+        background: linear-gradient(135deg, #e0f2fe 0%, #bae6fd 100%);
+        border-radius: 999px;
+        padding: 0.5rem 1rem;
+        margin: 0.25rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        cursor: pointer;
+        transition: all 0.3s;
+        border: 2px solid transparent;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: #0c4a6e;
+    }
+    
+    .knowledge-pill:hover {
+        background: linear-gradient(135deg, #bae6fd 0%, #7dd3fc 100%);
+        border-color: #0284c7;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(2, 132, 199, 0.2);
+    }
+    
+    .knowledge-pill i {
+        font-size: 1rem;
+    }
+    
+    /* Header Styling */
+    .chat-header {
+        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+        border-bottom: 2px solid #e2e8f0;
+        padding: 1.25rem;
+    }
+    
+    .chat-header h5 {
+        color: #0f172a;
+        font-weight: 700;
+        margin: 0;
+    }
+    
+    .chat-header small {
+        color: #64748b;
+        font-size: 0.825rem;
+    }
+    
+    /* Card Enhancements */
+    .card {
+        border: 1px solid #e2e8f0;
+        border-radius: 1rem;
+        overflow: hidden;
+        transition: all 0.3s;
+    }
+    
+    .card:hover {
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+    }
+    
+    .card-header {
+        background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
+        border-bottom: 2px solid #e2e8f0;
+        font-weight: 600;
+        color: #0f172a;
+    }
+    
+    /* Alerts */
+    .alert {
+        border-radius: 0.75rem;
+        border: none;
+        padding: 1rem 1.25rem;
+        animation: slideIn 0.3s ease-out;
+    }
+    
+    .alert-info {
+        background: linear-gradient(135deg, #dbeafe 0%, #bfdbfe 100%);
+        color: #1e3a8a;
+    }
+    
+    .alert-danger {
+        background: linear-gradient(135deg, #fee2e2 0%, #fecaca 100%);
+        color: #991b1b;
+    }
+    
+    /* Loading State */
+    .loading-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.9);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        border-radius: 1rem;
+    }
+    
+    .spinner-border {
+        color: #3b82f6;
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .chat-container {
+            height: 60vh;
+        }
+        
+        .chat-message {
+            max-width: 95%;
+        }
+        
+        .knowledge-pill {
+            font-size: 0.75rem;
+            padding: 0.375rem 0.75rem;
+        }
+    }
+    
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 3rem 1rem;
+        color: #64748b;
+    }
+    
+    .empty-state i {
+        font-size: 3rem;
+        margin-bottom: 1rem;
+        color: #cbd5e1;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row g-4">
+        <!-- Main Chat Area -->
+        <div class="col-lg-8">
+            <div class="card shadow-sm">
+                <!-- Chat Header -->
+                <div class="card-header chat-header d-flex justify-content-between align-items-center">
+                    <div>
+                        <h5 class="mb-1">
+                            <i class="fas fa-robot me-2 text-primary"></i>
+                            ShopHub AI Assistant
+                        </h5>
+                        <small class="text-muted">
+                            <i class="fas fa-sparkles me-1"></i>
+                            Powered by Google Gemini - Smart Product Recommendations
+                        </small>
+                    </div>
+                    <button class="btn btn-outline-primary btn-sm" id="newConversationBtn">
+                        <i class="fas fa-plus me-1"></i> New Chat
+                    </button>
+                </div>
+                
+                <!-- Chat Messages Container -->
+                <div class="chat-container">
+                    <div class="card-body chat-messages p-0" id="chatMessages">
+                        <!-- Messages will be dynamically inserted here -->
+                        <div class="empty-state">
+                            <i class="fas fa-comments"></i>
+                            <p class="mb-0">Start a conversation to get personalized product recommendations!</p>
+                        </div>
+                    </div>
+                    
+                    <!-- Chat Input -->
+                    <div class="chat-input-wrapper">
+                        <form id="chatForm" class="d-flex gap-2 align-items-end">
+                            <div class="flex-grow-1">
+                                <textarea 
+                                    id="chatInput" 
+                                    class="form-control" 
+                                    rows="2" 
+                                    placeholder="Ask me anything... (e.g., 'Show me the best smartphones under $500')"
+                                    required
+                                    maxlength="5000"
+                                ></textarea>
+                                <small class="text-muted mt-1 d-block">
+                                    <i class="fas fa-lightbulb me-1"></i>
+                                    Tip: Press Enter to send, Shift+Enter for new line
+                                </small>
+                            </div>
+                            <button type="submit" class="btn send-btn">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sidebar -->
+        <div class="col-lg-4">
+            <!-- Recent Conversations -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-history me-2"></i>
+                        Recent Conversations
+                    </h6>
+                </div>
+                <div class="list-group list-group-flush chat-sidebar" id="sessionList">
+                    <div class="list-group-item text-center text-muted py-4">
+                        <div class="spinner-border spinner-border-sm mb-2" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                        <p class="mb-0 small">Loading conversations...</p>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Prompts -->
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-magic me-2"></i>
+                        Quick Prompts
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex flex-wrap gap-2">
+                        <div class="knowledge-pill prompt-btn" data-prompt="Show me the top rated beauty products">
+                            <i class="fas fa-star"></i>
+                            <span>Top Beauty</span>
+                        </div>
+                        <div class="knowledge-pill prompt-btn" data-prompt="Compare the best smartphones under $500">
+                            <i class="fas fa-mobile-alt"></i>
+                            <span>Phone Deals</span>
+                        </div>
+                        <div class="knowledge-pill prompt-btn" data-prompt="What are the latest gaming accessories?">
+                            <i class="fas fa-gamepad"></i>
+                            <span>Gaming</span>
+                        </div>
+                        <div class="knowledge-pill prompt-btn" data-prompt="Recommend kitchen appliances for a small apartment">
+                            <i class="fas fa-blender"></i>
+                            <span>Kitchen</span>
+                        </div>
+                        <div class="knowledge-pill prompt-btn" data-prompt="Show me eco-friendly home products">
+                            <i class="fas fa-leaf"></i>
+                            <span>Eco-Friendly</span>
+                        </div>
+                        <div class="knowledge-pill prompt-btn" data-prompt="Best tech gifts under $100">
+                            <i class="fas fa-gift"></i>
+                            <span>Gift Ideas</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Help Card -->
+            <div class="card shadow-sm mt-4">
+                <div class="card-body">
+                    <h6 class="card-title">
+                        <i class="fas fa-question-circle me-2 text-info"></i>
+                        How It Works
+                    </h6>
+                    <ul class="list-unstyled small mb-0">
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            Ask about any product category
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            Get personalized recommendations
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-check text-success me-2"></i>
+                            Compare prices and features
+                        </li>
+                        <li>
+                            <i class="fas fa-check text-success me-2"></i>
+                            Real-time product information
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- CSRF Token for AJAX requests -->
+<meta name="csrf-token" content="{{ csrf_token }}">
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/chatbot.js' %}"></script>
+{% endblock %}

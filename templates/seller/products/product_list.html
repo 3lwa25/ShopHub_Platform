@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+
+{% block title %}My Products - Seller Portal{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">My Products</h1>
+            <p class="text-muted mb-0">Manage the products available in your storefront.</p>
+        </div>
+        <div>
+            <a href="{% url 'products:seller_add_product' %}" class="btn btn-primary"><i class="fas fa-plus"></i> Add Product</a>
+        </div>
+    </div>
+
+    <form method="get" class="row g-2 mb-3">
+        <div class="col-md-4">
+            <input type="text" name="search" value="{{ search_query }}" class="form-control" placeholder="Search products...">
+        </div>
+        <div class="col-md-3">
+            <select name="status" class="form-select">
+                <option value="">All Statuses</option>
+                <option value="active" {% if status == 'active' %}selected{% endif %}>Active</option>
+                <option value="inactive" {% if status == 'inactive' %}selected{% endif %}>Inactive</option>
+                <option value="out_of_stock" {% if status == 'out_of_stock' %}selected{% endif %}>Out of Stock</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <select name="category" class="form-select">
+                <option value="">All Categories</option>
+                {% for category in categories %}
+                    <option value="{{ category.id }}" {% if selected_category == category.id|stringformat:'s' %}selected{% endif %}>{{ category.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-2">
+            <button type="submit" class="btn btn-outline-light w-100">Filter</button>
+        </div>
+    </form>
+
+    <form method="post" action="{% url 'products:seller_product_bulk_update' %}">
+        {% csrf_token %}
+        <div class="table-responsive">
+            <table class="table table-hover align-middle">
+                <thead>
+                    <tr>
+                        <th><input type="checkbox" id="selectAll"></th>
+                        <th>Product</th>
+                        <th>Category</th>
+                        <th>Status</th>
+                        <th class="text-end">Price</th>
+                        <th class="text-end">Stock</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for product in page_obj %}
+                        <tr>
+                            <td><input type="checkbox" name="product_ids" value="{{ product.id }}"></td>
+                            <td>
+                                <div class="fw-semibold">{{ product.title }}</div>
+                                <div class="small text-muted">SKU: {{ product.sku }}</div>
+                            </td>
+                            <td>{{ product.category.name|default:"Uncategorized" }}</td>
+                            <td><span class="badge bg-secondary">{{ product.get_status_display }}</span></td>
+                            <td class="text-end">EGP {{ product.price|floatformat:2 }}</td>
+                            <td class="text-end">{{ product.stock }}</td>
+                            <td class="text-end">
+                                <a href="{% url 'products:seller_edit_product' product.id %}" class="btn btn-sm btn-outline-light"><i class="fas fa-edit"></i></a>
+                                <a href="{% url 'products:seller_delete_product' product.id %}" class="btn btn-sm btn-outline-danger"><i class="fas fa-trash"></i></a>
+                            </td>
+                        </tr>
+                    {% empty %}
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-4">No products found.</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mt-3">
+            <div class="btn-group">
+                <button type="submit" name="action" value="activate" class="btn btn-outline-light">Activate</button>
+                <button type="submit" name="action" value="deactivate" class="btn btn-outline-warning">Deactivate</button>
+                <button type="submit" name="action" value="delete" class="btn btn-outline-danger" onclick="return confirm('Delete selected products?')">Delete</button>
+            </div>
+            <nav>
+                <ul class="pagination pagination-sm mb-0">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a></li>
+                    {% endif %}
+                    <li class="page-item active"><span class="page-link">{{ page_obj.number }}</span></li>
+                    {% if page_obj.has_next %}
+                        <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </form>
+</div>
+
+<script>
+    const selectAll = document.getElementById('selectAll');
+    if (selectAll) {
+        selectAll.addEventListener('change', function () {
+            document.querySelectorAll('input[name="product_ids"]').forEach(cb => cb.checked = selectAll.checked);
+        });
+    }
+</script>
+{% endblock %}

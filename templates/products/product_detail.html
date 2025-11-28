@@ -1,0 +1,451 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ product.title }} - Shop Hub{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/products.css' %}">
+<style>
+.product-image-gallery img {
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+.product-image-gallery img:hover {
+    transform: scale(1.05);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'core:home' %}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'products:product_list' %}">Products</a></li>
+            {% if product.category %}
+            <li class="breadcrumb-item"><a href="{% url 'products:category_products' product.category.slug %}">{{ product.category.name }}</a></li>
+            {% endif %}
+            <li class="breadcrumb-item active">{{ product.title|truncatewords:5 }}</li>
+        </ol>
+    </nav>
+    
+    <div class="row">
+        <!-- Product Images -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <!-- Main Image -->
+                    <div class="mb-3">
+                        <img 
+                            id="mainProductImage"
+                            src="{% if primary_image %}{{ primary_image.image.url }}{% else %}{% static 'images/placeholder-product.jpg' %}{% endif %}" 
+                            class="img-fluid rounded" 
+                            alt="{{ product.title }}"
+                        >
+                    </div>
+                    
+                    <!-- Thumbnail Gallery -->
+                    {% if all_images.count > 1 %}
+                    <div class="product-image-gallery">
+                        <div class="row row-cols-4 g-2">
+                            {% for image in all_images %}
+                            <div class="col">
+                                <img 
+                                    src="{{ image.image.url }}" 
+                                    class="img-fluid rounded border {% if image == primary_image %}border-primary border-3{% endif %}" 
+                                    alt="{{ image.alt_text }}"
+                                    onclick="changeMainImage('{{ image.image.url }}')"
+                                >
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Product Info -->
+        <div class="col-lg-6">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h1 class="h3 mb-3">{{ product.title }}</h1>
+                    
+                    <!-- Category & SKU -->
+                    <div class="mb-3">
+                        {% if product.category %}
+                        <span class="badge bg-secondary me-2">
+                            <i class="fas fa-tag"></i> {{ product.category.name }}
+                        </span>
+                        {% endif %}
+                        <span class="text-muted small">SKU: {{ product.sku }}</span>
+                    </div>
+                    
+                    <!-- Rating -->
+                    <div class="mb-3">
+                        {% if product.review_count > 0 %}
+                        <div class="d-flex align-items-center">
+                            <div class="stars text-warning me-2">
+                                {% for i in "12345" %}
+                                    {% if forloop.counter <= product.rating|floatformat:"0" %}
+                                    <i class="fas fa-star"></i>
+                                    {% else %}
+                                    <i class="far fa-star"></i>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                            <span class="text-muted">({{ product.review_count }} reviews)</span>
+                        </div>
+                        {% else %}
+                        <div class="text-muted">
+                            <i class="far fa-star"></i> No reviews yet - Be the first!
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Price -->
+                    <div class="mb-4">
+                        <h2 class="text-primary mb-0">EGP {{ product.price }}</h2>
+                        {% if product.compare_at_price %}
+                        <div>
+                            <span class="text-muted text-decoration-line-through me-2">
+                                EGP {{ product.compare_at_price }}
+                            </span>
+                            <span class="badge bg-danger">Save {{ product.discount_percentage }}%</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Stock Status -->
+                    <div class="mb-4">
+                        {% if product.is_in_stock %}
+                            {% if product.is_low_stock %}
+                            <div class="alert alert-warning" role="alert">
+                                <i class="fas fa-exclamation-triangle"></i> <strong>Only {{ product.stock }} left in stock!</strong>
+                            </div>
+                            {% else %}
+                            <div class="alert alert-success" role="alert">
+                                <i class="fas fa-check-circle"></i> In Stock ({{ product.stock }} available)
+                            </div>
+                            {% endif %}
+                        {% else %}
+                        <div class="alert alert-danger" role="alert">
+                            <i class="fas fa-times-circle"></i> Out of Stock
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Variants (if any) -->
+                    {% if variants %}
+                    <div class="mb-4">
+                        <h6>Available Options:</h6>
+                        <div class="d-flex flex-wrap gap-2">
+                            {% for variant in variants %}
+                            <button class="btn btn-outline-secondary btn-sm" {% if not variant.is_in_stock %}disabled{% endif %}>
+                                {% if variant.size %}Size: {{ variant.size }}{% endif %}
+                                {% if variant.color %} - {{ variant.color }}{% endif %}
+                                {% if not variant.is_in_stock %} (Out of Stock){% endif %}
+                            </button>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <!-- Quantity Selector -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">Quantity:</label>
+                        <div class="input-group" style="max-width: 150px;">
+                            <button class="btn btn-outline-secondary" type="button" onclick="decreaseQty()">-</button>
+                            <input type="number" class="form-control text-center" id="quantity" value="1" min="1" max="{{ product.stock }}">
+                            <button class="btn btn-outline-secondary" type="button" onclick="increaseQty()">+</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Action Buttons -->
+                    <div class="d-grid gap-2 mb-4">
+                        {% if product.is_in_stock %}
+                            {% if can_shop %}
+                            <button class="btn btn-primary btn-lg" onclick="addToCartFromDetail({{ product.id }})">
+                                <i class="fas fa-shopping-cart"></i> Add to Cart
+                            </button>
+                            {% else %}
+                            <button class="btn btn-secondary btn-lg" disabled>
+                                <i class="fas fa-info-circle"></i> Sellers cannot checkout
+                            </button>
+                            {% endif %}
+                        {% else %}
+                        <button class="btn btn-secondary btn-lg" disabled>
+                            <i class="fas fa-ban"></i> Out of Stock
+                        </button>
+                        {% endif %}
+                        {% if user.is_authenticated and not user.is_seller %}
+                        <button class="btn btn-outline-danger wishlist-toggle-btn" data-product-id="{{ product.id }}">
+                            <i class="far fa-heart wishlist-icon" id="wishlist-icon-{{ product.id }}"></i> Save to Wishlist
+                        </button>
+                        {% elif not user.is_authenticated %}
+                        <a class="btn btn-outline-danger" href="{% url 'accounts:login' %}?next={{ request.path }}">
+                            <i class="far fa-heart"></i> Login to Save
+                        </a>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Seller Info -->
+                    <div class="border-top pt-3">
+                        <p class="mb-1"><strong>Sold by:</strong> {{ product.seller.business_name|default:"Shop Hub" }}</p>
+                        {% if product.seller.verified %}
+                        <span class="badge bg-success">
+                            <i class="fas fa-check-circle"></i> Verified Seller
+                        </span>
+                        {% endif %}
+                    </div>
+                    
+                    <!-- Virtual Try-On Button -->
+                    {% if product.vto_enabled and vto_asset %}
+                    <div class="mt-3">
+                        <a href="{% url 'virtual_tryon:vto_tryon' product.id %}" class="btn btn-primary btn-lg w-100">
+                            <i class="fas fa-magic"></i> Try Virtual Try-On
+                        </a>
+                        <small class="text-muted d-block mt-2 text-center">
+                            <i class="fas fa-info-circle"></i> See how this product looks on you!
+                        </small>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Product Tabs -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <ul class="nav nav-tabs card-header-tabs" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active" data-bs-toggle="tab" href="#description" role="tab">
+                                Description
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-bs-toggle="tab" href="#specifications" role="tab">
+                                Specifications
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" data-bs-toggle="tab" href="#reviews" role="tab">
+                                Reviews ({{ product.review_count }})
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <div class="card-body">
+                    <div class="tab-content">
+                        <!-- Description Tab -->
+                        <div class="tab-pane fade show active" id="description" role="tabpanel">
+                            <div class="product-description">
+                                {{ product.description|linebreaks }}
+                            </div>
+                        </div>
+                        
+                        <!-- Specifications Tab -->
+                        <div class="tab-pane fade" id="specifications" role="tabpanel">
+                            {% if product.attributes %}
+                            <table class="table table-striped">
+                                <tbody>
+                                    {% for key, value in product.attributes.items %}
+                                    <tr>
+                                        <th width="30%">{{ key|title }}</th>
+                                        <td>{{ value }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                            {% else %}
+                            <p class="text-muted">No specifications available.</p>
+                            {% endif %}
+                        </div>
+                        
+                        <!-- Reviews Tab -->
+                        <div class="tab-pane fade" id="reviews" role="tabpanel">
+                            <div class="d-flex justify-content-between align-items-center mb-4">
+                                <div>
+                                    <h5 class="mb-1">Customer Reviews</h5>
+                                    {% if product.review_count > 0 %}
+                                        <div class="d-flex align-items-center">
+                                            <div class="stars text-warning me-2">
+                                                {% for i in "12345" %}
+                                                    {% if forloop.counter <= product.rating|floatformat:"0" %}
+                                                        <i class="fas fa-star"></i>
+                                                    {% else %}
+                                                        <i class="far fa-star"></i>
+                                                    {% endif %}
+                                                {% endfor %}
+                                            </div>
+                                            <span class="text-muted">({{ product.review_count }} review{{ product.review_count|pluralize }})</span>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                                <a href="{% url 'reviews:product_reviews' product.id %}" class="btn btn-outline-primary">
+                                    View All Reviews <i class="fas fa-arrow-right ms-1"></i>
+                                </a>
+                            </div>
+                            
+                            {% if product.review_count > 0 %}
+                                {% with recent_reviews=product.reviews.all|slice:":3" %}
+                                    {% for review in recent_reviews %}
+                                        {% if review.status == 'approved' %}
+                                        <div class="card shadow-sm mb-3">
+                                            <div class="card-body">
+                                                <div class="d-flex justify-content-between align-items-start mb-2">
+                                                    <div>
+                                                        <h6 class="mb-1">{{ review.title }}</h6>
+                                                        <div class="mb-2">
+                                                            {% for i in "12345" %}
+                                                                {% if forloop.counter <= review.rating %}
+                                                                    <i class="fas fa-star text-warning"></i>
+                                                                {% else %}
+                                                                    <i class="far fa-star text-muted"></i>
+                                                                {% endif %}
+                                                            {% endfor %}
+                                                            <span class="ms-2 small text-muted">{{ review.created_at|date:"M d, Y" }}</span>
+                                                            {% if review.verified_purchase %}
+                                                                <span class="badge bg-success ms-2">
+                                                                    <i class="fas fa-check-circle"></i> Verified Purchase
+                                                                </span>
+                                                            {% endif %}
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <p class="mb-2">{{ review.body|truncatewords:30 }}</p>
+                                                <small class="text-muted">By {{ review.buyer.full_name|default:review.buyer.email }}</small>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                    {% endfor %}
+                                {% endwith %}
+                            {% else %}
+                                <div class="text-center text-muted py-4">
+                                    <i class="fas fa-star fa-3x mb-3"></i>
+                                    <p>No reviews yet. Be the first to review this product!</p>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- AI Assistant & Virtual Try-On Section -->
+    <div class="row mt-4">
+        <!-- AI Assistant Section -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-robot"></i> AI Shopping Assistant
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-3">
+                        Get instant answers about this product, compare with similar items, and get personalized recommendations.
+                    </p>
+                    <a href="{% url 'ai_chatbot:chat_home' %}?product_id={{ product.id }}" class="btn btn-primary w-100">
+                        <i class="fas fa-comments"></i> Chat with AI Assistant
+                    </a>
+                    <small class="text-muted d-block mt-2 text-center">
+                        <i class="fas fa-lightbulb"></i> Ask questions, get recommendations
+                    </small>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Virtual Try-On Section -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                    <h5 class="mb-0">
+                        <i class="fas fa-magic"></i> Virtual Try-On
+                    </h5>
+                </div>
+                <div class="card-body">
+                    {% if product.vto_enabled and vto_asset %}
+                        <p class="text-muted mb-3">
+                            Try this product virtually! Upload your photo or use your camera to see how it looks on you.
+                        </p>
+                        <a href="{% url 'virtual_tryon:vto_tryon' product.id %}" class="btn btn-primary w-100" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border: none;">
+                            <i class="fas fa-camera"></i> Try Virtual Try-On
+                        </a>
+                        <small class="text-muted d-block mt-2 text-center">
+                            <i class="fas fa-shield-alt"></i> Privacy-first: Photos auto-delete after 30 days
+                        </small>
+                    {% else %}
+                        <p class="text-muted mb-3">
+                            Virtual Try-On is not available for this product yet. Check out other products with VTO enabled!
+                        </p>
+                        <a href="{% url 'virtual_tryon:vto_home' %}" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-search"></i> Browse VTO Products
+                        </a>
+                        <small class="text-muted d-block mt-2 text-center">
+                            <i class="fas fa-info-circle"></i> Available for accessories, jewelry, eyewear, and more
+                        </small>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Related Products -->
+    {% if related_products %}
+    <div class="row mt-4">
+        <div class="col-12">
+            <h3 class="mb-4">Related Products</h3>
+            <div class="row row-cols-1 row-cols-md-3 row-cols-lg-4 g-4">
+                {% for product in related_products %}
+                <div class="col">
+                    {% include 'products/components/product_card.html' %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/cart.js' %}"></script>
+<script src="{% static 'js/wishlist.js' %}"></script>
+<script>
+function changeMainImage(imageUrl) {
+    document.getElementById('mainProductImage').src = imageUrl;
+}
+
+function decreaseQty() {
+    const qtyInput = document.getElementById('quantity');
+    const currentQty = parseInt(qtyInput.value);
+    if (currentQty > 1) {
+        qtyInput.value = currentQty - 1;
+    }
+}
+
+function increaseQty() {
+    const qtyInput = document.getElementById('quantity');
+    const currentQty = parseInt(qtyInput.value);
+    const maxQty = parseInt(qtyInput.max);
+    if (currentQty < maxQty) {
+        qtyInput.value = currentQty + 1;
+    }
+}
+
+// addToCart is defined in static/js/cart.js
+function addToCartFromDetail(productId) {
+    const quantity = parseInt(document.getElementById('quantity').value) || 1;
+    addToCart(productId, quantity);
+}
+
+// Wishlist functionality is in static/js/wishlist.js
+</script>
+{% endblock %}
+

@@ -1,0 +1,35 @@
+{% extends 'emails/base_email.html' %}
+
+{% block subject %}Shipment update - {{ order.order_number }}{% endblock %}
+
+{% block content %}
+<span class="badge">Shipping Update</span>
+<h2>Tracking update for {{ order.order_number }}</h2>
+<p>Your shipment has a new status update.</p>
+
+<table class="details-table">
+    <tr>
+        <th>Status</th>
+        <td>{{ latest_update.status }}</td>
+    </tr>
+    <tr>
+        <th>Timestamp</th>
+        <td>{{ latest_update.timestamp|date:"M d, Y H:i" }}</td>
+    </tr>
+    {% if latest_update.location %}
+    <tr>
+        <th>Location</th>
+        <td>{{ latest_update.location }}</td>
+    </tr>
+    {% endif %}
+    {% if latest_update.notes %}
+    <tr>
+        <th>Notes</th>
+        <td>{{ latest_update.notes }}</td>
+    </tr>
+    {% endif %}
+</table>
+
+<p style="margin-top: 16px;">Track your order anytime using the link below.</p>
+<a href="{{ tracking_url }}" class="btn">Track Shipment</a>
+{% endblock %}

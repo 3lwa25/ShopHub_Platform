@@ -1,0 +1,65 @@
+{% extends 'emails/base_email.html' %}
+
+{% block content %}
+<tr>
+    <td style="padding: 40px 30px; background-color: #ffffff;">
+        <h1 style="margin: 0 0 20px 0; color: #667eea; font-size: 28px;">
+            🎁 Reward Redeemed!
+        </h1>
+        
+        <p style="margin: 0 0 15px 0; color: #333333; font-size: 16px; line-height: 24px;">
+            Hi {{ user.get_full_name|default:user.email }},
+        </p>
+        
+        <p style="margin: 0 0 20px 0; color: #333333; font-size: 16px; line-height: 24px;">
+            Congratulations! You've successfully redeemed <strong>{{ reward.name }}</strong> for 
+            <strong>{{ reward.points_required }} points</strong>.
+        </p>
+        
+        {% if coupon_code %}
+        <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 12px; padding: 20px; margin: 20px 0; text-align: center;">
+            <p style="margin: 0 0 10px 0; color: #ffffff; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">
+                Your Coupon Code
+            </p>
+            <h2 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 700; letter-spacing: 2px;">
+                {{ coupon_code }}
+            </h2>
+        </div>
+        
+        <p style="margin: 20px 0; color: #666666; font-size: 14px; line-height: 22px;">
+            Use this code at checkout to get your discount. The coupon is valid for 30 days.
+        </p>
+        {% endif %}
+        
+        <div style="background-color: #f9fafb; border-radius: 8px; padding: 20px; margin: 20px 0;">
+            <h3 style="margin: 0 0 15px 0; color: #333333; font-size: 18px;">Redemption Details</h3>
+            <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                    <td style="padding: 8px 0; color: #666666; font-size: 14px; width: 40%;">Reward:</td>
+                    <td style="padding: 8px 0; color: #333333; font-size: 14px; font-weight: 600;">{{ reward.name }}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px 0; color: #666666; font-size: 14px;">Points Spent:</td>
+                    <td style="padding: 8px 0; color: #333333; font-size: 14px; font-weight: 600;">{{ reward.points_required }}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px 0; color: #666666; font-size: 14px;">Redemption Date:</td>
+                    <td style="padding: 8px 0; color: #333333; font-size: 14px; font-weight: 600;">{{ redemption.created_at|date:"F d, Y g:i A" }}</td>
+                </tr>
+            </table>
+        </div>
+        
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="http://{{ request.get_host }}{% url 'rewards:dashboard' %}" 
+               style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #ffffff; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
+                View Rewards Dashboard
+            </a>
+        </div>
+        
+        <p style="margin: 20px 0 0 0; color: #666666; font-size: 14px; line-height: 22px;">
+            Thank you for being a valued member of Shop Hub!
+        </p>
+    </td>
+</tr>
+{% endblock %}
+

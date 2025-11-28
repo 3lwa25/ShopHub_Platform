@@ -1,0 +1,310 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Products - Shop Hub{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/products.css' %}">
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <!-- Sidebar Filters -->
+        <div class="col-lg-3 col-md-4 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-filter"></i> Filters</h5>
+                </div>
+                <div class="card-body">
+                    <form method="get" action="{% url 'products:product_list' %}" id="filterForm">
+                        <!-- Search -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Search</label>
+                            {{ form.query }}
+                        </div>
+                        
+                        <!-- Categories -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Category</label>
+                            <select name="category" class="form-select">
+                                <option value="">All Categories</option>
+                                {% for category in categories %}
+                                <option value="{{ category.slug }}" {% if request.GET.category == category.slug %}selected{% endif %}>
+                                    {{ category.name }}
+                                </option>
+                                {% if category.children.all %}
+                                    {% for child in category.children.all %}
+                                    <option value="{{ child.slug }}" {% if request.GET.category == child.slug %}selected{% endif %}>
+                                        &nbsp;&nbsp;└─ {{ child.name }}
+                                    </option>
+                                    {% endfor %}
+                                {% endif %}
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <!-- Price Range -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Price Range (EGP)</label>
+                            <div class="row g-2">
+                                <div class="col-6">
+                                    <input type="number" name="min_price" class="form-control form-control-sm" 
+                                           placeholder="Min" value="{{ request.GET.min_price }}" min="0">
+                                </div>
+                                <div class="col-6">
+                                    <input type="number" name="max_price" class="form-control form-control-sm" 
+                                           placeholder="Max" value="{{ request.GET.max_price }}" min="0">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Rating -->
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Minimum Rating</label>
+                            <select name="min_rating" class="form-select">
+                                <option value="">All Ratings</option>
+                                <option value="4" {% if request.GET.min_rating == '4' %}selected{% endif %}>
+                                    ★★★★ 4+ Stars
+                                </option>
+                                <option value="3" {% if request.GET.min_rating == '3' %}selected{% endif %}>
+                                    ★★★ 3+ Stars
+                                </option>
+                                <option value="2" {% if request.GET.min_rating == '2' %}selected{% endif %}>
+                                    ★★ 2+ Stars
+                                </option>
+                            </select>
+                        </div>
+                        
+                        <!-- In Stock -->
+                        <div class="mb-3 form-check">
+                            <input type="checkbox" name="in_stock" value="1" class="form-check-input" id="inStock"
+                                   {% if request.GET.in_stock %}checked{% endif %}>
+                            <label class="form-check-label" for="inStock">
+                                In Stock Only
+                            </label>
+                        </div>
+                        
+                        <!-- Action Buttons -->
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search"></i> Apply Filters
+                            </button>
+                            <a href="{% url 'products:product_list' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-redo"></i> Clear Filters
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Products Area -->
+        <div class="col-lg-9 col-md-8">
+            <!-- Toolbar -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-6">
+                            <p class="mb-md-0">
+                                <strong>{{ total_count }}</strong> products found
+                                {% if search_query %}for "<strong>{{ search_query }}</strong>"{% endif %}
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="d-flex justify-content-md-end align-items-center">
+                                <!-- View Toggle -->
+                                <div class="btn-group me-3" role="group">
+                                    <a href="?{% for key, value in request.GET.items %}{% if key != 'view' %}{{ key }}={{ value }}&{% endif %}{% endfor %}view=grid" 
+                                       class="btn btn-sm btn-outline-primary {% if view_type == 'grid' %}active{% endif %}">
+                                        <i class="fas fa-th"></i>
+                                    </a>
+                                    <a href="?{% for key, value in request.GET.items %}{% if key != 'view' %}{{ key }}={{ value }}&{% endif %}{% endfor %}view=list" 
+                                       class="btn btn-sm btn-outline-primary {% if view_type == 'list' %}active{% endif %}">
+                                        <i class="fas fa-list"></i>
+                                    </a>
+                                </div>
+                                
+                                <!-- Sort By -->
+                                <select name="sort_by" class="form-select form-select-sm" style="width: auto;" onchange="updateSort(this.value)">
+                                    <option value="shuffle" {% if request.GET.sort_by == 'shuffle' or not request.GET.sort_by %}selected{% endif %}>Shuffle (Random)</option>
+                                    <option value="most_recent" {% if request.GET.sort_by == 'most_recent' %}selected{% endif %}>Most Recent</option>
+                                    <option value="-created_at" {% if request.GET.sort_by == '-created_at' %}selected{% endif %}>Newest First</option>
+                                    <option value="price" {% if request.GET.sort_by == 'price' %}selected{% endif %}>Price: Low to High</option>
+                                    <option value="-price" {% if request.GET.sort_by == '-price' %}selected{% endif %}>Price: High to Low</option>
+                                    <option value="-rating" {% if request.GET.sort_by == '-rating' %}selected{% endif %}>Highest Rated</option>
+                                    <option value="-review_count" {% if request.GET.sort_by == '-review_count' %}selected{% endif %}>Most Popular</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Products Grid/List -->
+            {% if products %}
+            <div class="row row-cols-1 {% if view_type == 'grid' %}row-cols-md-2 row-cols-lg-3{% endif %} g-4" id="productsContainer">
+                {% for product in products %}
+                <div class="col">
+                    {% include 'products/components/product_card.html' %}
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Pagination -->
+            {% if page_obj.has_other_pages %}
+            <nav aria-label="Products pagination" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.previous_page_number }}">
+                            Previous
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">Previous</span>
+                    </li>
+                    {% endif %}
+                    
+                    {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                        <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ num }}">
+                                {{ num }}
+                            </a>
+                        </li>
+                        {% endif %}
+                    {% endfor %}
+                    
+                    {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?{% for key, value in request.GET.items %}{% if key != 'page' %}{{ key }}={{ value }}&{% endif %}{% endfor %}page={{ page_obj.next_page_number }}">
+                            Next
+                        </a>
+                    </li>
+                    {% else %}
+                    <li class="page-item disabled">
+                        <span class="page-link">Next</span>
+                    </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+            
+            {% else %}
+            <!-- No Products Found -->
+            <div class="card shadow-sm">
+                <div class="card-body text-center py-5">
+                    <i class="fas fa-box-open fa-4x text-muted mb-3"></i>
+                    {% if search_query or request.GET.category or request.GET.min_price or request.GET.max_price %}
+                    <h4>No products found</h4>
+                    <p class="text-muted mb-4">Try adjusting your filters or search terms</p>
+                    <a href="{% url 'products:product_list' %}" class="btn btn-primary">
+                        <i class="fas fa-redo"></i> View All Products
+                    </a>
+                    {% else %}
+                    <h4>No products available yet</h4>
+                    <p class="text-muted mb-4">Products will appear here once they are added to the catalog.</p>
+                    {% if user.is_authenticated and user.is_seller %}
+                    <a href="{% url 'products:seller_add_product' %}" class="btn btn-primary me-2">
+                        <i class="fas fa-plus"></i> Add Your First Product
+                    </a>
+                    {% endif %}
+                    <a href="{% url 'core:home' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-home"></i> Back to Home
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Quick View Modal -->
+<div class="modal fade" id="quickViewModal" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Quick View</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="quickViewContent">
+                <div class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/products.js' %}"></script>
+<script src="{% static 'js/cart.js' %}"></script>
+<script>
+function updateSort(sortValue) {
+    const url = new URL(window.location);
+    url.searchParams.set('sort_by', sortValue);
+    window.location = url;
+}
+
+// addToCart is defined in static/js/cart.js
+
+function quickView(slug) {
+    const modal = new bootstrap.Modal(document.getElementById('quickViewModal'));
+    const content = document.getElementById('quickViewContent');
+    
+    modal.show();
+    
+    fetch(`/products/quick-view/${slug}/`)
+        .then(response => response.json())
+        .then(data => {
+            content.innerHTML = `
+                <div class="row">
+                    <div class="col-md-6">
+                        <img src="${data.image || '/static/images/placeholder-product.jpg'}" 
+                             class="img-fluid" alt="${data.title}">
+                    </div>
+                    <div class="col-md-6">
+                        <h3>${data.title}</h3>
+                        <div class="mb-2">
+                            <span class="badge bg-secondary">${data.category}</span>
+                        </div>
+                        <div class="mb-3">
+                            <h4 class="text-primary">EGP ${data.price}</h4>
+                            ${data.compare_at_price ? `<span class="text-muted text-decoration-line-through">EGP ${data.compare_at_price}</span>` : ''}
+                            ${data.discount_percentage ? `<span class="badge bg-danger ms-2">${data.discount_percentage}% OFF</span>` : ''}
+                        </div>
+                        <div class="mb-3">
+                            <span class="text-warning">${'★'.repeat(Math.floor(data.rating))}</span>
+                            <span class="text-muted ms-1">(${data.review_count} reviews)</span>
+                        </div>
+                        <p>${data.description}</p>
+                        <div class="mb-3">
+                            <strong>Stock:</strong> ${data.is_in_stock ? '<span class="text-success">In Stock</span>' : '<span class="text-danger">Out of Stock</span>'}
+                        </div>
+                        <div class="d-grid gap-2">
+                            <a href="/products/${data.slug}/" class="btn btn-primary">
+                                <i class="fas fa-eye"></i> View Full Details
+                            </a>
+                            ${data.is_in_stock ? `<button class="btn btn-outline-primary" onclick="addToCart(${data.id})">
+                                <i class="fas fa-shopping-cart"></i> Add to Cart
+                            </button>` : ''}
+                        </div>
+                    </div>
+                </div>
+            `;
+        })
+        .catch(error => {
+            content.innerHTML = '<div class="alert alert-danger">Error loading product details</div>';
+        });
+}
+</script>
+{% endblock %}
+

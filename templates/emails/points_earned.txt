@@ -1,0 +1,25 @@
+You Earned {{ points }} Points!
+
+Hi {{ user.get_full_name|default:user.email }},
+
+Great news! You've earned {{ points }} reward points{% if order %} for your order #{{ order.order_number }}{% endif %}!
+
+POINTS EARNED: +{{ points }}
+
+{% if order %}
+Order Details:
+--------------
+Order Number: #{{ order.order_number }}
+Order Total: {{ order.total_amount }} EGP
+Points Earned: {{ points }} points
+{% endif %}
+
+These points can be redeemed for discounts, free shipping, and exclusive rewards!
+
+View available rewards: {{ request.get_host }}{% url 'rewards:dashboard' %}
+
+Keep shopping to earn more points and unlock exclusive benefits!
+
+---
+Shop Hub - Your Rewards Partner
+

@@ -1,0 +1,41 @@
+{% extends 'emails/base_email.html' %}
+
+{% block subject %}Order confirmation - {{ order.order_number }}{% endblock %}
+
+{% block content %}
+<span class="badge">Order Confirmed</span>
+<h2>Thank you for your purchase, {{ buyer.full_name|default:buyer.email }}!</h2>
+<p>Your order <strong>{{ order.order_number }}</strong> has been received. A summary is included below.</p>
+
+<table class="details-table">
+    <thead>
+        <tr>
+            <th style="width: 60%;">Item</th>
+            <th style="width: 20%;">Qty</th>
+            <th style="width: 20%;">Subtotal</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for item in order.items.all %}
+            <tr>
+                <td>{{ item.product_name }}</td>
+                <td>{{ item.quantity }}</td>
+                <td>EGP {{ item.subtotal|floatformat:2 }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<table class="details-table" style="margin-top: 12px;">
+    <tr>
+        <th>Total Paid</th>
+        <td>EGP {{ order.total_amount|floatformat:2 }}</td>
+    </tr>
+    <tr>
+        <th>Payment Status</th>
+        <td>{{ order.get_payment_status_display }}</td>
+    </tr>
+</table>
+
+<a href="{{ order_detail_url }}" class="btn">View Order Details</a>
+{% endblock %}

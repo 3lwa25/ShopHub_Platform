@@ -1,0 +1,81 @@
+{% extends 'emails/base_email.html' %}
+
+{% block content %}
+<tr>
+    <td style="padding: 40px 30px; background-color: #ffffff;">
+        <h1 style="margin: 0 0 20px 0; color: #9370db; font-size: 28px;">
+            🏆 Tier Upgraded!
+        </h1>
+        
+        <p style="margin: 0 0 15px 0; color: #333333; font-size: 16px; line-height: 24px;">
+            Hi {{ user.get_full_name|default:user.email }},
+        </p>
+        
+        <p style="margin: 0 0 20px 0; color: #333333; font-size: 16px; line-height: 24px;">
+            Congratulations! You've been upgraded from <strong>{{ old_tier|title }}</strong> to 
+            <strong style="color: #9370db;">{{ new_tier|title }} Tier</strong>!
+        </p>
+        
+        <div style="background: linear-gradient(135deg, #9370db 0%, #667eea 100%); border-radius: 12px; padding: 30px; margin: 20px 0; text-align: center;">
+            {% if new_tier == 'platinum' %}
+            <div style="font-size: 64px; margin-bottom: 10px;">💎</div>
+            {% elif new_tier == 'gold' %}
+            <div style="font-size: 64px; margin-bottom: 10px;">🥇</div>
+            {% elif new_tier == 'silver' %}
+            <div style="font-size: 64px; margin-bottom: 10px;">🥈</div>
+            {% else %}
+            <div style="font-size: 64px; margin-bottom: 10px;">🥉</div>
+            {% endif %}
+            <h2 style="margin: 0; color: #ffffff; font-size: 32px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px;">
+                {{ new_tier }} TIER
+            </h2>
+        </div>
+        
+        <div style="background-color: #f9fafb; border-radius: 8px; padding: 20px; margin: 20px 0;">
+            <h3 style="margin: 0 0 15px 0; color: #333333; font-size: 18px;">Your New Benefits</h3>
+            <ul style="margin: 0; padding: 0 0 0 20px; color: #333333; font-size: 14px; line-height: 28px;">
+                {% if new_tier == 'platinum' %}
+                <li>Earn <strong>3 points</strong> per EGP spent</li>
+                <li>Personal shopping assistant</li>
+                <li><strong>15% exclusive discounts</strong></li>
+                <li>First access to limited editions</li>
+                <li>Complimentary gift wrapping</li>
+                <li>VIP event invitations</li>
+                <li>Priority everything</li>
+                {% elif new_tier == 'gold' %}
+                <li>Earn <strong>2 points</strong> per EGP spent</li>
+                <li><strong>Free shipping</strong> on all orders</li>
+                <li><strong>10% exclusive discounts</strong></li>
+                <li>VIP customer support</li>
+                <li>Special birthday gifts</li>
+                {% elif new_tier == 'silver' %}
+                <li>Earn <strong>1.5 points</strong> per EGP spent</li>
+                <li>Priority customer support</li>
+                <li><strong>5% exclusive discounts</strong></li>
+                <li>Early access to new products</li>
+                {% else %}
+                <li>Earn 1 point per EGP spent</li>
+                <li>Basic customer support</li>
+                <li>Birthday rewards</li>
+                {% endif %}
+            </ul>
+        </div>
+        
+        <p style="margin: 20px 0; color: #666666; font-size: 14px; line-height: 22px;">
+            Thank you for being a loyal customer! Your {{ new_tier|title }} tier benefits are now active and ready to use.
+        </p>
+        
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="http://{{ request.get_host }}{% url 'rewards:tier_info' %}" 
+               style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #9370db 0%, #667eea 100%); color: #ffffff; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
+                View All Tier Benefits
+            </a>
+        </div>
+        
+        <p style="margin: 20px 0 0 0; color: #666666; font-size: 14px; line-height: 22px;">
+            Keep earning points to maintain your tier and unlock even more exclusive benefits!
+        </p>
+    </td>
+</tr>
+{% endblock %}
+

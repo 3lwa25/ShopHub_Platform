@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block title %}Select Payment Method - Order {{ order.order_number }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row g-4">
+        <div class="col-lg-7">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+                    <h1 class="h5 mb-0">Payment Method</h1>
+                    <a href="{% url 'orders:buyer_order_detail' order.order_number %}" class="btn btn-outline-secondary btn-sm">Back to Order</a>
+                </div>
+                <div class="card-body">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        {{ form.non_field_errors }}
+                        <div class="vstack gap-3">
+                            {% for field in form %}
+                                <div class="form-check">
+                                    {{ field }}
+                                    <label class="form-check-label" for="{{ field.id_for_label }}">
+                                        <span class="fw-semibold">{{ field.choice_label }}</span>
+                                    </label>
+                                </div>
+                            {% endfor %}
+                        </div>
+                        <p class="small text-muted mt-3 mb-0">Credit / Debit Card, PayPal, and other online methods are simulated for Phase 6. No real payment will be processed.</p>
+                        <div class="text-end mt-4">
+                            <button type="submit" class="btn btn-primary">Continue</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white border-0">
+                    <h2 class="h6 mb-0">Order Summary</h2>
+                </div>
+                <div class="card-body">
+                    <p class="mb-1"><strong>Order:</strong> {{ order.order_number }}</p>
+                    <p class="mb-1"><strong>Status:</strong> {{ order.get_status_display }}</p>
+                    <p class="mb-1"><strong>Total:</strong> EGP {{ order.total_amount|floatformat:2 }}</p>
+                    <p class="mb-0"><strong>Current Payment Status:</strong> {{ order.get_payment_status_display }}</p>
+                </div>
+            </div>
+            <div class="card shadow-sm border-0 mt-3">
+                <div class="card-body">
+                    <h2 class="h6">Need Help?</h2>
+                    <p class="small text-muted mb-2">If you experience issues while completing the payment, please contact our support team.</p>
+                    <a href="mailto:{{ support_email|default:'support@shophub.com' }}" class="btn btn-outline-primary btn-sm">Contact Support</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Edit Review - {{ product.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'core:home' %}">Home</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'products:product_detail' product.slug %}">{{ product.title }}</a></li>
+                    <li class="breadcrumb-item active">Edit Review</li>
+                </ol>
+            </nav>
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h4 class="mb-0">Edit Your Review</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data" novalidate>
+                        {% csrf_token %}
+                        
+                        <!-- Star Rating -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Your Rating *</label>
+                            <div class="star-rating mb-2" data-rating="{{ review.rating }}">
+                                {% for i in "12345" %}
+                                    <i class="{% if forloop.counter <= review.rating %}fas text-warning{% else %}far{% endif %} fa-star star" data-rating="{{ forloop.counter }}"></i>
+                                {% endfor %}
+                            </div>
+                            {{ form.rating }}
+                            {% if form.rating.errors %}
+                                <div class="text-danger small">{{ form.rating.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.title.label_tag }}
+                            {{ form.title }}
+                            {% if form.title.errors %}
+                                <div class="text-danger small">{{ form.title.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <div class="mb-3">
+                            {{ form.body.label_tag }}
+                            {{ form.body }}
+                            {% if form.body.errors %}
+                                <div class="text-danger small">{{ form.body.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Existing Images -->
+                        {% if existing_images %}
+                        <div class="mb-3">
+                            <label class="form-label">Current Photos</label>
+                            <div class="row g-2">
+                                {% for img in existing_images %}
+                                <div class="col-auto">
+                                    <img src="{{ img.image.url }}" class="img-thumbnail" style="width: 100px; height: 100px; object-fit: cover;" alt="Review photo">
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <div class="mb-3">
+                            <label class="form-label">Add More Photos (Optional, max 5)</label>
+                            <input type="file" name="images" class="form-control" accept="image/*" multiple>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'reviews:product_reviews' product.id %}" class="btn btn-outline-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Update Review</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const stars = document.querySelectorAll('.star');
+    const ratingInput = document.getElementById('id_rating');
+    const currentRating = {{ review.rating }};
+    
+    stars.forEach(star => {
+        star.addEventListener('click', function() {
+            const rating = parseInt(this.dataset.rating);
+            ratingInput.value = rating;
+            
+            stars.forEach((s, index) => {
+                if (index < rating) {
+                    s.classList.remove('far');
+                    s.classList.add('fas', 'text-warning');
+                } else {
+                    s.classList.remove('fas', 'text-warning');
+                    s.classList.add('far');
+                }
+            });
+        });
+    });
+});
+</script>
+{% endblock %}
+{% endblock %}
+

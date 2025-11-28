@@ -1,0 +1,212 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Seller Dashboard - Shop Hub{% endblock %}
+
+{% block content %}
+<div class="container py-4 seller-dashboard">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1">Welcome back, {{ seller_profile.user.full_name }}</h1>
+            {% if not is_approved_seller %}
+                <span class="badge bg-warning text-dark">Pending Approval</span>
+            {% else %}
+                <span class="badge bg-success">Approved Seller</span>
+            {% endif %}
+        </div>
+        <div>
+            <a href="{% url 'products:seller_products' %}" class="btn btn-primary me-2">
+                <i class="fas fa-box"></i> Manage Products
+            </a>
+            <a href="{% url 'orders:seller_orders' %}" class="btn btn-outline-light">
+                <i class="fas fa-shopping-cart"></i> View Orders
+            </a>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <p class="text-muted text-uppercase small">Total Products</p>
+                    <h3 class="fw-bold mb-0">{{ total_products }}</h3>
+                    <p class="small text-muted mb-0">{{ active_products }} active · {{ out_of_stock }} out of stock</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <p class="text-muted text-uppercase small">
+                        Pending Orders
+                        <i class="fas fa-info-circle text-muted ms-1" 
+                           data-bs-toggle="tooltip" 
+                           data-bs-placement="top" 
+                           title="Orders waiting for your action: payment received (PAID) or payment pending (PENDING_PAYMENT). Ready to process and ship."></i>
+                    </p>
+                    <h3 class="fw-bold mb-0">{{ pending_orders }}</h3>
+                    <p class="small text-muted mb-0">Processing: {{ processing_orders }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <p class="text-muted text-uppercase small">In Transit</p>
+                    <h3 class="fw-bold mb-0">{{ shipped_orders }}</h3>
+                    <p class="small text-muted mb-0">Delivered: {{ delivered_orders }}</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-body">
+                    <p class="text-muted text-uppercase small">Revenue (30 days)</p>
+                    <h3 class="fw-bold mb-0">EGP {{ revenue_last_30_days|floatformat:2 }}</h3>
+                    <p class="small text-muted mb-0">7 days: EGP {{ revenue_last_7_days|floatformat:2 }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-3 mt-1">
+        <div class="col-lg-7">
+            <div class="card shadow-sm border-0 h-100">
+                <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+                    <h2 class="h5 mb-0">Recent Orders</h2>
+                    <a href="{% url 'orders:seller_orders' %}" class="small">View all</a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-sm table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Order #</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for order in recent_orders %}
+                                    <tr>
+                                        <td><a href="{% url 'orders:seller_order_detail' order.order_number %}">{{ order.order_number }}</a></td>
+                                        <td>{{ order.created_at|date:"M d, Y" }}</td>
+                                        <td><span class="badge bg-secondary">{{ order.get_status_display }}</span></td>
+                                        <td>EGP {{ order.total_amount|floatformat:2 }}</td>
+                                    </tr>
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="4" class="text-center text-muted py-4">No recent orders yet.</td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-5">
+            <div class="card shadow-sm border-0" style="max-height: 200px; overflow-y: auto;">
+                <div class="card-header bg-white border-0 d-flex justify-content-between align-items-center">
+                    <h2 class="h5 mb-0">Low Stock Alerts</h2>
+                    <a href="{% url 'products:seller_products' %}?status=out_of_stock" class="small">Manage stock</a>
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush">
+                        {% for product in low_stock_products|slice:":3" %}
+                            <li class="list-group-item d-flex justify-content-between align-items-center">
+                                <span>{{ product.title|truncatechars:35 }}</span>
+                                <span class="badge bg-danger">{{ product.stock }} left</span>
+                            </li>
+                        {% empty %}
+                            <li class="list-group-item text-muted text-center py-2">No low stock alerts.</li>
+                        {% endfor %}
+                        {% if low_stock_products|length > 3 %}
+                        <li class="list-group-item text-center py-2">
+                            <a href="{% url 'products:seller_products' %}?status=out_of_stock" class="small text-primary">
+                                View {{ low_stock_products|length|add:"-3" }} more...
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+            <div class="card shadow-sm border-0 mt-3 quick-links-card" style="margin-bottom: 2rem;">
+                <div class="card-header bg-white border-0">
+                    <h2 class="h5 mb-0">Quick Links</h2>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{% url 'products:seller_add_product' %}" class="btn btn-outline-primary btn-sm d-flex align-items-center justify-content-between">
+                            <span><i class="fas fa-plus-circle me-2"></i>Add New Product</span>
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                        <a href="{% url 'products:seller_products' %}" class="btn btn-outline-primary btn-sm d-flex align-items-center justify-content-between">
+                            <span><i class="fas fa-box me-2"></i>Manage Products</span>
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                        <a href="{% url 'orders:seller_orders' %}" class="btn btn-outline-primary btn-sm d-flex align-items-center justify-content-between">
+                            <span><i class="fas fa-shopping-cart me-2"></i>View All Orders</span>
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                        <a href="{% url 'orders:seller_payment_history' %}" class="btn btn-outline-primary btn-sm d-flex align-items-center justify-content-between">
+                            <span><i class="fas fa-money-bill-wave me-2"></i>Payment History</span>
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                        <a href="{% url 'accounts:seller_analytics' %}" class="btn btn-outline-primary btn-sm d-flex align-items-center justify-content-between">
+                            <span><i class="fas fa-chart-line me-2"></i>View Analytics</span>
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                        <a href="{% url 'accounts:seller_profile_edit' %}" class="btn btn-outline-secondary btn-sm d-flex align-items-center justify-content-between">
+                            <span><i class="fas fa-user-edit me-2"></i>Update Profile</span>
+                            <i class="fas fa-chevron-right"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Fix Quick Links and Footer Overlap */
+.seller-dashboard {
+    padding-bottom: 4rem;
+    margin-bottom: 2rem;
+}
+
+.seller-dashboard .card {
+    margin-bottom: 1rem;
+}
+
+.seller-dashboard .quick-links-card {
+    margin-bottom: 2rem !important;
+}
+
+/* Ensure footer is visible */
+footer {
+    position: relative;
+    margin-top: 3rem;
+    clear: both;
+}
+
+/* Low stock section - compact */
+.seller-dashboard .card-body ul.list-group {
+    max-height: 150px;
+    overflow-y: auto;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Initialize Bootstrap tooltips
+    document.addEventListener('DOMContentLoaded', function() {
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl);
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,319 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Shopping Cart - Shop Hub{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/cart.css' %}">
+<style>
+    /* Ensure dropdown menus appear above sticky cart summary */
+    .dropdown-menu {
+        z-index: 1050 !important;
+    }
+    /* Ensure navbar dropdowns are always visible */
+    .navbar .dropdown-menu {
+        z-index: 1055 !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'core:home' %}">Home</a></li>
+            <li class="breadcrumb-item active" aria-current="page">Shopping Cart</li>
+        </ol>
+    </nav>
+
+    <h1 class="mb-4">
+        <i class="fas fa-shopping-cart me-2"></i>Shopping Cart
+        {% if cart_count > 0 %}
+            <span class="badge bg-primary">{{ cart_count }} item{{ cart_count|pluralize }}</span>
+        {% endif %}
+    </h1>
+
+    {% if cart_items %}
+        <div class="row">
+            <!-- Cart Items -->
+            <div class="col-lg-8">
+                <!-- Out of stock warning -->
+                {% if out_of_stock_items %}
+                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    <strong>Stock Alert!</strong> Some items in your cart are out of stock or have limited availability.
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+                {% endif %}
+
+                <div class="card shadow-sm">
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table cart-table mb-0">
+                                <thead>
+                                    <tr>
+                                        <th style="width: 100px;">Image</th>
+                                        <th>Product</th>
+                                        <th style="width: 150px;">Price</th>
+                                        <th style="width: 150px;">Quantity</th>
+                                        <th style="width: 150px;">Subtotal</th>
+                                        <th style="width: 80px;">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in cart_items %}
+                                    <tr class="cart-item" data-item-id="{{ item.id }}">
+                                        <!-- Product Image -->
+                                        <td>
+                                            <a href="{% url 'products:product_detail' item.product.slug %}">
+                                                {% with primary_image=item.product.images.all|first %}
+                                                <img 
+                                                    src="{% if primary_image %}{{ primary_image.image.url }}{% else %}{% static 'images/placeholder-product.jpg' %}{% endif %}" 
+                                                    alt="{{ item.product.title }}"
+                                                    class="img-thumbnail"
+                                                    style="width: 80px; height: 80px; object-fit: cover;"
+                                                >
+                                                {% endwith %}
+                                            </a>
+                                        </td>
+
+                                        <!-- Product Info -->
+                                        <td>
+                                            <h6 class="mb-1">
+                                                <a href="{% url 'products:product_detail' item.product.slug %}" class="text-dark text-decoration-none">
+                                                    {{ item.product.title|truncatewords:10 }}
+                                                </a>
+                                            </h6>
+                                            <small class="text-muted">
+                                                <i class="fas fa-tag me-1"></i>{{ item.product.category.name }}
+                                            </small>
+                                            {% if not item.is_in_stock %}
+                                            <div class="badge bg-danger mt-1">Out of Stock</div>
+                                            {% elif item.product.is_low_stock %}
+                                            <div class="badge bg-warning text-dark mt-1">
+                                                Only {{ item.product.stock }} left
+                                            </div>
+                                            {% endif %}
+                                        </td>
+
+                                        <!-- Price -->
+                                        <td>
+                                            <div class="fw-bold">EGP {{ item.product.price }}</div>
+                                            {% if item.product.is_on_sale %}
+                                            <small class="text-muted text-decoration-line-through">
+                                                EGP {{ item.product.compare_at_price }}
+                                            </small>
+                                            <div class="badge bg-danger mt-1">
+                                                -{{ item.product.discount_percentage }}%
+                                            </div>
+                                            {% endif %}
+                                        </td>
+
+                                        <!-- Quantity -->
+                                        <td>
+                                            <div class="input-group input-group-sm" style="max-width: 130px;">
+                                                <button class="btn btn-outline-secondary decrease-qty" type="button" data-item-id="{{ item.id }}">
+                                                    <i class="fas fa-minus"></i>
+                                                </button>
+                                                <input type="number" 
+                                                       class="form-control text-center quantity-input" 
+                                                       value="{{ item.quantity }}"
+                                                       min="1" 
+                                                       max="{{ item.max_quantity_available }}"
+                                                       data-item-id="{{ item.id }}"
+                                                       {% if not item.is_in_stock %}disabled{% endif %}>
+                                                <button class="btn btn-outline-secondary increase-qty" type="button" data-item-id="{{ item.id }}">
+                                                    <i class="fas fa-plus"></i>
+                                                </button>
+                                            </div>
+                                        </td>
+
+                                        <!-- Subtotal -->
+                                        <td>
+                                            <div class="fw-bold item-subtotal">EGP {{ item.subtotal|floatformat:2 }}</div>
+                                            {% if item.savings > 0 %}
+                                            <small class="text-success">
+                                                Saved: EGP {{ item.savings|floatformat:2 }}
+                                            </small>
+                                            {% endif %}
+                                        </td>
+
+                                        <!-- Remove Button -->
+                                        <td>
+                                            <button class="btn btn-sm btn-danger remove-item" data-item-id="{{ item.id }}" title="Remove">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Continue Shopping / Clear Cart -->
+                <div class="d-flex justify-content-between mt-3">
+                    <a href="{% url 'products:product_list' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-arrow-left me-2"></i>Continue Shopping
+                    </a>
+                    <form method="post" action="{% url 'cart:clear_cart' %}" class="clear-cart-form">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline-danger">
+                            <i class="fas fa-trash me-2"></i>Clear Cart
+                        </button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Cart Summary -->
+            <div class="col-lg-4">
+                <div class="card shadow-sm sticky-top" style="top: 100px; z-index: 1;">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0"><i class="fas fa-receipt me-2"></i>Order Summary</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Subtotal:</span>
+                            <span class="fw-bold cart-subtotal">EGP {{ cart_total|floatformat:2 }}</span>
+                        </div>
+                        {% if cart.total_savings > 0 %}
+                        <div class="d-flex justify-content-between mb-2 text-success">
+                            <span>Total Savings:</span>
+                            <span class="fw-bold">EGP {{ cart.total_savings|floatformat:2 }}</span>
+                        </div>
+                        {% endif %}
+                        {% if applied_coupon and discount_amount > 0 %}
+                        <div class="d-flex justify-content-between mb-2 text-success">
+                            <span>Discount:</span>
+                            <span class="fw-bold">-EGP {{ discount_amount|floatformat:2 }}</span>
+                        </div>
+                        {% endif %}
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Shipping:</span>
+                            <span class="{% if shipping_fee == 0 %}text-success{% else %}text-muted{% endif %}">
+                                {% if shipping_fee == 0 %}FREE{% else %}EGP {{ shipping_fee|floatformat:2 }}{% endif %}
+                            </span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Tax (2.5%):</span>
+                            <span class="text-muted">EGP {{ tax_amount|floatformat:2 }}</span>
+                        </div>
+                        <hr>
+                        
+                        <!-- Coupon Section -->
+                        {% if user.is_authenticated and not user.is_seller %}
+                        <div class="mb-3">
+                            {% if request.session.applied_coupon_code %}
+                                {% load static %}
+                                <div class="alert alert-success d-flex justify-content-between align-items-center mb-2" role="alert">
+                                    <div>
+                                        <i class="fas fa-tag me-2"></i>
+                                        <strong>{{ request.session.applied_coupon_code }}</strong> applied
+                                    </div>
+                                    <form method="post" action="{% url 'orders:remove_coupon' %}" class="d-inline">
+                                        {% csrf_token %}
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            {% else %}
+                                <form method="post" action="{% url 'orders:apply_coupon' %}" id="coupon-form" class="mb-2">
+                                    {% csrf_token %}
+                                    <div class="input-group">
+                                        <input type="text" 
+                                               name="coupon_code" 
+                                               class="form-control" 
+                                               placeholder="Enter coupon code"
+                                               required>
+                                        <button type="submit" class="btn btn-outline-primary">
+                                            <i class="fas fa-tag"></i> Apply
+                                        </button>
+                                    </div>
+                                </form>
+                                <small class="text-muted">
+                                    <a href="{% url 'orders:available_coupons' %}" class="text-decoration-none">
+                                        <i class="fas fa-info-circle"></i> View available coupons
+                                    </a>
+                                </small>
+                            {% endif %}
+                        </div>
+                        <hr>
+                        {% endif %}
+                        
+                        {% if applied_coupon and discount_amount > 0 %}
+                        <div class="d-flex justify-content-between mb-2">
+                            <span>Subtotal:</span>
+                            <span>EGP {{ cart_total|floatformat:2 }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between mb-2 text-success">
+                            <span>
+                                <i class="fas fa-tag me-1"></i>
+                                Discount ({{ applied_coupon.code }}):
+                            </span>
+                            <span class="fw-bold">-EGP {{ discount_amount|floatformat:2 }}</span>
+                        </div>
+                        <hr>
+                        {% endif %}
+                        <div class="d-flex justify-content-between mb-3">
+                            <span class="h5">Total:</span>
+                            <span class="h5 text-primary fw-bold cart-total">EGP {{ final_total|floatformat:2 }}</span>
+                        </div>
+                        
+                        {% if user.is_authenticated %}
+                        <a href="{% url 'orders:checkout' %}" class="btn btn-primary w-100 mb-2">
+                            <i class="fas fa-credit-card me-2"></i>Proceed to Checkout
+                        </a>
+                        {% else %}
+                        <a href="{% url 'accounts:login' %}?next={{ request.path }}" class="btn btn-primary w-100 mb-2">
+                            <i class="fas fa-sign-in-alt me-2"></i>Login to Checkout
+                        </a>
+                        <small class="text-muted d-block text-center">
+                            Or <a href="{% url 'accounts:register' %}">create an account</a>
+                        </small>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Trust Badges -->
+                <div class="card shadow-sm mt-3">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-shield-alt text-success me-2"></i>
+                            <small>Secure Checkout</small>
+                        </div>
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="fas fa-truck text-primary me-2"></i>
+                            <small>Fast Delivery</small>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <i class="fas fa-undo text-info me-2"></i>
+                            <small>Easy Returns</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    {% else %}
+        <!-- Empty Cart -->
+        <div class="card shadow-sm text-center py-5">
+            <div class="card-body">
+                <i class="fas fa-shopping-cart fa-5x text-muted mb-4"></i>
+                <h3>Your cart is empty</h3>
+                <p class="text-muted mb-4">Add some products to your cart to continue shopping.</p>
+                <a href="{% url 'products:product_list' %}" class="btn btn-primary btn-lg">
+                    <i class="fas fa-shopping-bag me-2"></i>Start Shopping
+                </a>
+            </div>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/cart.js' %}"></script>
+{% endblock %}
+

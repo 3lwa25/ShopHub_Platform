@@ -1,35 +1,617 @@
 {% extends 'base.html' %}
+{% load static %}
 
-{% block title %}Shop Hub - AI-Powered E-Commerce Platform{% endblock %}
+{% block title %}Home - Shophub | AI-Powered E-Commerce{% endblock %}
 
-{% block content %}
-<div class="container my-5">
-    <div class="row justify-content-center text-center">
-        <div class="col-lg-8">
-            <h1 class="display-4 mb-4">
-                <i class="fas fa-shopping-bag text-primary me-3"></i>Welcome to Shop Hub
-            </h1>
-            <p class="lead mb-5">
-                Your AI-Powered E-Commerce Platform
-            </p>
-            
-            {% if not user.is_authenticated %}
-            <div class="d-grid gap-2 d-md-flex justify-content-md-center">
-                <a href="{% url 'accounts:register' %}" class="btn btn-primary btn-lg me-md-2">
-                    <i class="fas fa-user-plus me-2"></i>Get Started
-                </a>
-                <a href="{% url 'accounts:login' %}" class="btn btn-outline-primary btn-lg">
-                    <i class="fas fa-sign-in-alt me-2"></i>Login
-                </a>
-            </div>
-            {% else %}
-            <div class="alert alert-success">
-                <h5><i class="fas fa-check-circle me-2"></i>Welcome back, {{ user.full_name|default:user.email }}!</h5>
-                <p class="mb-0">Phase 2 (Authentication) is complete! Product catalog coming in Phase 3.</p>
-            </div>
-            {% endif %}
-        </div>
-    </div>
-</div>
+{% block extra_css %}
+<style>
+    /* Hero Section */
+    .hero-section {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 80px 0;
+        margin-top: -20px;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .hero-section::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        opacity: 0.3;
+    }
+    
+    .hero-content {
+        position: relative;
+        z-index: 1;
+    }
+    
+    /* Category Cards */
+    .category-card {
+        transition: all 0.3s ease;
+        cursor: pointer;
+        border: none;
+        overflow: hidden;
+    }
+    
+    .category-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+    }
+    
+    .category-card img {
+        height: 200px;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+    
+    .category-card:hover img {
+        transform: scale(1.1);
+    }
+    
+    /* Product Cards */
+    .product-card {
+        transition: all 0.3s ease;
+        border: none;
+        height: 100%;
+    }
+    
+    .product-card:hover {
+        box-shadow: 0 8px 20px rgba(0,0,0,0.12);
+        transform: translateY(-3px);
+    }
+    
+    .product-image {
+        height: 250px;
+        object-fit: cover;
+        width: 100%;
+    }
+    
+    .badge-discount {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        background: #ff4757;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-weight: bold;
+        z-index: 1;
+    }
+    
+    .badge-new {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        background: #2ecc71;
+        color: white;
+        padding: 5px 10px;
+        border-radius: 5px;
+        font-weight: bold;
+        z-index: 1;
+    }
+    
+    /* AI Features Section */
+    .ai-feature-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        transition: all 0.3s ease;
+    }
+    
+    .ai-feature-card:hover {
+        transform: scale(1.05);
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+    }
+    
+    /* Stats Section */
+    .stats-section {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        padding: 60px 0;
+    }
+    
+    .stat-item {
+        text-align: center;
+    }
+    
+    .stat-number {
+        font-size: 3rem;
+        font-weight: bold;
+        margin-bottom: 10px;
+    }
+    
+    .stat-label {
+        font-size: 1.2rem;
+        opacity: 0.9;
+    }
+    
+    /* Section Titles */
+    .section-title {
+        position: relative;
+        margin-bottom: 40px;
+        text-align: center;
+    }
+    
+    .section-title h2 {
+        font-weight: 700;
+        color: #2c3e50;
+    }
+    
+    .section-title::after {
+        content: '';
+        display: block;
+        width: 80px;
+        height: 4px;
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+        margin: 15px auto 0;
+        border-radius: 2px;
+    }
+    
+    /* Carousel Controls */
+    .carousel-control-prev,
+    .carousel-control-next {
+        width: 50px;
+        height: 50px;
+        background: rgba(0, 0, 0, 0.5);
+        border-radius: 50%;
+        top: 50%;
+        transform: translateY(-50%);
+    }
+    
+    .carousel-control-prev:hover,
+    .carousel-control-next:hover {
+        background: rgba(0, 0, 0, 0.8);
+    }
+    
+    /* Newsletter Section */
+    .newsletter-section {
+        background: #f8f9fa;
+        padding: 60px 0;
+    }
+    
+    .newsletter-input {
+        border-radius: 50px 0 0 50px;
+        border-right: none;
+        padding: 15px 25px;
+    }
+    
+    .newsletter-btn {
+        border-radius: 0 50px 50px 0;
+        padding: 15px 30px;
+    }
+</style>
 {% endblock %}
 
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container hero-content">
+        <div class="row align-items-center">
+            <div class="col-lg-7 col-md-6">
+                <h1 class="display-3 fw-bold mb-4 animate__animated animate__fadeInUp">
+                    Welcome to <span style="color: #ffd700;">Shop</span>Hub
+                </h1>
+                <p class="lead mb-4 animate__animated animate__fadeInUp animate__delay-1s">
+                    Experience the future of online shopping with AI-powered recommendations, 
+                    virtual try-on technology, and personalized experiences.
+                </p>
+                <div class="d-flex gap-3 flex-wrap animate__animated animate__fadeInUp animate__delay-2s">
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'products:product_list' %}" class="btn btn-light btn-lg px-5 py-3">
+                            <i class="fas fa-shopping-bag me-2"></i>Start Shopping
+                        </a>
+                        <a href="{% url 'ai_chatbot:chat_home' %}" class="btn btn-outline-light btn-lg px-5 py-3">
+                            <i class="fas fa-robot me-2"></i>Ask AI Assistant
+                        </a>
+                    {% else %}
+                        <a href="{% url 'accounts:register' %}" class="btn btn-light btn-lg px-5 py-3">
+                            <i class="fas fa-user-plus me-2"></i>Get Started
+                        </a>
+                        <a href="{% url 'products:product_list' %}" class="btn btn-outline-light btn-lg px-5 py-3">
+                            <i class="fas fa-search me-2"></i>Explore Products
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-lg-5 col-md-6 text-center mt-4 mt-md-0">
+                <div class="hero-illustration">
+                    <i class="fas fa-shopping-cart" style="font-size: 250px; opacity: 0.2;"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- AI Features Highlight -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="section-title">
+            <h2 class="display-6">🚀 AI-Powered Features</h2>
+            <p class="text-muted">Experience shopping like never before</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card ai-feature-card h-100 text-center p-4">
+                    <div class="card-body">
+                        <i class="fas fa-robot fa-4x mb-3" style="opacity: 0.9;"></i>
+                        <h4 class="fw-bold mb-3">AI Chatbot</h4>
+                        <p class="mb-3">Get instant help, product recommendations, and answers to your questions 24/7.</p>
+                        <a href="{% url 'ai_chatbot:chat_home' %}" class="btn btn-light">
+                            Try Now <i class="fas fa-arrow-right ms-2"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card ai-feature-card h-100 text-center p-4">
+                    <div class="card-body">
+                        <i class="fas fa-camera fa-4x mb-3" style="opacity: 0.9;"></i>
+                        <h4 class="fw-bold mb-3">Virtual Try-On</h4>
+                        <p class="mb-3">See how products look on you before buying with our AR technology.</p>
+                        <a href="{% url 'virtual_tryon:vto_home' %}" class="btn btn-light">
+                            Try Now <i class="fas fa-arrow-right ms-2"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card ai-feature-card h-100 text-center p-4">
+                    <div class="card-body">
+                        <i class="fas fa-trophy fa-4x mb-3" style="opacity: 0.9;"></i>
+                        <h4 class="fw-bold mb-3">Rewards Program</h4>
+                        <p class="mb-3">Earn points on every purchase and unlock exclusive benefits.</p>
+                        <a href="{% url 'rewards:dashboard' %}" class="btn btn-light">
+                            Learn More <i class="fas fa-arrow-right ms-2"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Featured Products Carousel -->
+{% if featured_products %}
+<section class="py-5">
+    <div class="container">
+        <div class="section-title">
+            <h2 class="display-6">⭐ Featured Products</h2>
+            <p class="text-muted">Handpicked products just for you</p>
+        </div>
+        <div id="featuredCarousel" class="carousel slide" data-bs-ride="carousel">
+            <div class="carousel-inner">
+                {% for product in featured_products %}
+                    {% if forloop.counter0|divisibleby:4 or forloop.first %}
+                        <div class="carousel-item {% if forloop.first %}active{% endif %}">
+                            <div class="row g-4">
+                    {% endif %}
+                                <div class="col-md-3">
+                                    <div class="card product-card shadow-sm">
+                                        <div class="position-relative">
+                                            {% if product.discount_percentage > 0 %}
+                                                <span class="badge-discount">-{{ product.discount_percentage }}%</span>
+                                            {% endif %}
+                                            {% if product.images.first %}
+                                                <img src="{{ product.images.first.image.url }}" class="card-img-top product-image" alt="{{ product.title }}">
+                                            {% else %}
+                                                <img src="{% static 'images/no-image.png' %}" class="card-img-top product-image" alt="{{ product.title }}">
+                                            {% endif %}
+                                        </div>
+                                        <div class="card-body">
+                                            <h6 class="card-title text-truncate">{{ product.title }}</h6>
+                                            <div class="mb-2">
+                                                <div class="text-warning">
+                                                    {% for i in "12345"|slice:":5" %}
+                                                        {% if forloop.counter <= product.rating|floatformat:0 %}
+                                                            <i class="fas fa-star"></i>
+                                                        {% else %}
+                                                            <i class="far fa-star"></i>
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                    <small class="text-muted ms-1">({{ product.review_count }})</small>
+                                                </div>
+                                            </div>
+                                            <p class="mb-2">
+                                                <span class="h5 text-primary fw-bold">EGP {{ product.price }}</span>
+                                                {% if product.discount_percentage > 0 %}
+                                                    <small class="text-muted text-decoration-line-through ms-2">
+                                                        EGP {{ product.original_price }}
+                                                    </small>
+                                                {% endif %}
+                                            </p>
+                                            <a href="{% url 'products:product_detail' product.slug %}" class="btn btn-primary btn-sm w-100">
+                                                View Details
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                    {% if forloop.counter|divisibleby:4 or forloop.last %}
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+            <button class="carousel-control-prev" type="button" data-bs-target="#featuredCarousel" data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#featuredCarousel" data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+            </button>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Categories Showcase -->
+{% if main_categories %}
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="section-title">
+            <h2 class="display-6">🗂️ Shop by Category</h2>
+            <p class="text-muted">Find exactly what you're looking for</p>
+        </div>
+        <div class="row g-4">
+            {% for category in main_categories %}
+                <div class="col-lg-3 col-md-4 col-sm-6">
+                    <a href="{% url 'products:category_products' category.slug %}" class="text-decoration-none">
+                        <div class="card category-card shadow-sm">
+                            {% if category.image %}
+                                <img src="{{ category.image.url }}" class="card-img-top" alt="{{ category.name }}">
+                            {% else %}
+                                <div class="card-img-top bg-gradient" style="height: 200px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center;">
+                                    <i class="fas fa-th text-white" style="font-size: 60px; opacity: 0.7;"></i>
+                                </div>
+                            {% endif %}
+                            <div class="card-body text-center">
+                                <h5 class="card-title fw-bold">{{ category.name }}</h5>
+                                <p class="text-muted mb-0">
+                                    <small>{{ category.product_count }} product{{ category.product_count|pluralize }}</small>
+                                </p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            {% endfor %}
+        </div>
+        <div class="text-center mt-4">
+            <a href="{% url 'products:product_list' %}" class="btn btn-outline-primary btn-lg">
+                View All Categories <i class="fas fa-arrow-right ms-2"></i>
+            </a>
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- New Arrivals -->
+{% if new_arrivals %}
+<section class="py-5">
+    <div class="container">
+        <div class="section-title">
+            <h2 class="display-6">🆕 New Arrivals</h2>
+            <p class="text-muted">Check out the latest products</p>
+        </div>
+        <div class="row g-4">
+            {% for product in new_arrivals|slice:":4" %}
+                <div class="col-lg-3 col-md-4 col-sm-6">
+                    <div class="card product-card shadow-sm">
+                        <div class="position-relative">
+                            <span class="badge-new">NEW</span>
+                            {% if product.images.first %}
+                                <img src="{{ product.images.first.image.url }}" class="card-img-top product-image" alt="{{ product.title }}">
+                            {% else %}
+                                <img src="{% static 'images/no-image.png' %}" class="card-img-top product-image" alt="{{ product.title }}">
+                            {% endif %}
+                        </div>
+                        <div class="card-body">
+                            <h6 class="card-title text-truncate">{{ product.title }}</h6>
+                            <div class="mb-2">
+                                <div class="text-warning">
+                                    {% for i in "12345"|slice:":5" %}
+                                        {% if forloop.counter <= product.rating|floatformat:0 %}
+                                            <i class="fas fa-star"></i>
+                                        {% else %}
+                                            <i class="far fa-star"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                    <small class="text-muted ms-1">({{ product.review_count }})</small>
+                                </div>
+                            </div>
+                            <p class="mb-2">
+                                <span class="h5 text-primary fw-bold">EGP {{ product.price }}</span>
+                            </p>
+                            <a href="{% url 'products:product_detail' product.slug %}" class="btn btn-primary btn-sm w-100">
+                                View Details
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Trending Products -->
+{% if trending_products %}
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="section-title">
+            <h2 class="display-6">🔥 Trending Now</h2>
+            <p class="text-muted">What everyone's buying</p>
+        </div>
+        <div class="row g-4">
+            {% for product in trending_products|slice:":4" %}
+                <div class="col-lg-3 col-md-4 col-sm-6">
+                    <div class="card product-card shadow-sm">
+                        <div class="position-relative">
+                            {% if product.images.first %}
+                                <img src="{{ product.images.first.image.url }}" class="card-img-top product-image" alt="{{ product.title }}">
+                            {% else %}
+                                <img src="{% static 'images/no-image.png' %}" class="card-img-top product-image" alt="{{ product.title }}">
+                            {% endif %}
+                        </div>
+                        <div class="card-body">
+                            <h6 class="card-title text-truncate">{{ product.title }}</h6>
+                            <div class="mb-2">
+                                <div class="text-warning">
+                                    {% for i in "12345"|slice:":5" %}
+                                        {% if forloop.counter <= product.rating|floatformat:0 %}
+                                            <i class="fas fa-star"></i>
+                                        {% else %}
+                                            <i class="far fa-star"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                    <small class="text-muted ms-1">({{ product.review_count }})</small>
+                                </div>
+                            </div>
+                            <p class="mb-2">
+                                <span class="h5 text-primary fw-bold">EGP {{ product.price }}</span>
+                            </p>
+                            <a href="{% url 'products:product_detail' product.slug %}" class="btn btn-primary btn-sm w-100">
+                                View Details
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Sale Products -->
+{% if sale_products %}
+<section class="py-5">
+    <div class="container">
+        <div class="section-title">
+            <h2 class="display-6">🎉 Hot Deals</h2>
+            <p class="text-muted">Limited time offers</p>
+        </div>
+        <div class="row g-4">
+            {% for product in sale_products|slice:":4" %}
+                <div class="col-lg-3 col-md-4 col-sm-6">
+                    <div class="card product-card shadow-sm">
+                        <div class="position-relative">
+                            <span class="badge-discount">-{{ product.discount_percentage }}%</span>
+                            {% if product.images.first %}
+                                <img src="{{ product.images.first.image.url }}" class="card-img-top product-image" alt="{{ product.title }}">
+                            {% else %}
+                                <img src="{% static 'images/no-image.png' %}" class="card-img-top product-image" alt="{{ product.title }}">
+                            {% endif %}
+                        </div>
+                        <div class="card-body">
+                            <h6 class="card-title text-truncate">{{ product.title }}</h6>
+                            <div class="mb-2">
+                                <div class="text-warning">
+                                    {% for i in "12345"|slice:":5" %}
+                                        {% if forloop.counter <= product.rating|floatformat:0 %}
+                                            <i class="fas fa-star"></i>
+                                        {% else %}
+                                            <i class="far fa-star"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                    <small class="text-muted ms-1">({{ product.review_count }})</small>
+                                </div>
+                            </div>
+                            <p class="mb-2">
+                                <span class="h5 text-danger fw-bold">EGP {{ product.price }}</span>
+                                <small class="text-muted text-decoration-line-through ms-2">
+                                    EGP {{ product.original_price }}
+                                </small>
+                            </p>
+                            <a href="{% url 'products:product_detail' product.slug %}" class="btn btn-danger btn-sm w-100">
+                                View Deal
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+{% endif %}
+
+<!-- Stats Section -->
+<section class="stats-section">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="stat-item">
+                    <div class="stat-number">{{ stats.total_products|default:0 }}+</div>
+                    <div class="stat-label">Products Available</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-item">
+                    <div class="stat-number">{{ stats.total_categories|default:0 }}+</div>
+                    <div class="stat-label">Categories</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-item">
+                    <div class="stat-number">{{ stats.total_reviews|default:0 }}+</div>
+                    <div class="stat-label">Happy Customers</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Newsletter Section -->
+<section class="newsletter-section">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 text-center">
+                <h2 class="display-6 fw-bold mb-3">📧 Subscribe to Our Newsletter</h2>
+                <p class="lead text-muted mb-4">Get the latest updates on new products, exclusive deals, and special offers.</p>
+                <form class="d-flex justify-content-center" onsubmit="subscribeNewsletter(event)">
+                    <input type="email" class="form-control newsletter-input" placeholder="Enter your email address" required style="max-width: 400px;">
+                    <button type="submit" class="btn btn-primary newsletter-btn">Subscribe</button>
+                </form>
+                <small class="text-muted d-block mt-3">We respect your privacy. Unsubscribe anytime.</small>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+{% if not user.is_authenticated %}
+<section class="py-5">
+    <div class="container">
+        <div class="card text-center p-5 border-0" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+            <div class="card-body">
+                <h2 class="display-5 fw-bold mb-3">Ready to Start Shopping?</h2>
+                <p class="lead mb-4">Join thousands of satisfied customers and experience the future of e-commerce!</p>
+                <div class="d-flex gap-3 justify-content-center flex-wrap">
+                    <a href="{% url 'accounts:register' %}" class="btn btn-light btn-lg px-5">
+                        <i class="fas fa-user-plus me-2"></i>Create Account
+                    </a>
+                    <a href="{% url 'accounts:login' %}" class="btn btn-outline-light btn-lg px-5">
+                        <i class="fas fa-sign-in-alt me-2"></i>Login
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    function subscribeNewsletter(event) {
+        event.preventDefault();
+        const email = event.target.querySelector('input[type="email"]').value;
+        
+        // In a real application, you would send this to your backend
+        alert(`Thank you for subscribing with ${email}! You'll hear from us soon.`);
+        event.target.reset();
+    }
+</script>
+{% endblock %}

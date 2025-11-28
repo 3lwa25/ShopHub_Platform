@@ -1,0 +1,39 @@
+{% extends 'emails/base_email.html' %}
+
+{% block subject %}Payment receipt - {{ order.order_number }}{% endblock %}
+
+{% block content %}
+<span class="badge">Payment Receipt</span>
+<h2>Payment update for order {{ order.order_number }}</h2>
+<p>Here are the details of your latest transaction.</p>
+
+<table class="details-table">
+    <tr>
+        <th>Amount</th>
+        <td>EGP {{ transaction.amount|floatformat:2 }}</td>
+    </tr>
+    <tr>
+        <th>Payment method</th>
+        <td>{{ transaction.get_payment_method_display }}</td>
+    </tr>
+    <tr>
+        <th>Status</th>
+        <td>{{ transaction.get_status_display }}</td>
+    </tr>
+    {% if transaction.gateway_transaction_id %}
+    <tr>
+        <th>Gateway reference</th>
+        <td>{{ transaction.gateway_transaction_id }}</td>
+    </tr>
+    {% endif %}
+    {% if transaction.card_brand %}
+    <tr>
+        <th>Card</th>
+        <td>{{ transaction.card_brand }} •••• {{ transaction.card_last4 }}</td>
+    </tr>
+    {% endif %}
+</table>
+
+<p style="margin-top: 16px;">A PDF copy of your invoice is attached to this email for your records.</p>
+<a href="{{ site_url }}/orders/my-orders/{{ order.order_number }}/" class="btn">View Order</a>
+{% endblock %}

@@ -1,0 +1,229 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Tier Information - Shop Hub{% endblock %}
+
+{% block extra_css %}
+<style>
+    .tier-hero {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 3rem 0;
+        border-radius: 15px;
+        margin-bottom: 2rem;
+    }
+    
+    .tier-card {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+        transition: all 0.3s;
+        border: 3px solid transparent;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .tier-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 8px;
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    }
+    
+    .tier-card.active {
+        border-color: #667eea;
+        transform: scale(1.05);
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+    }
+    
+    .tier-card.active::after {
+        content: 'YOUR TIER';
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 1px;
+    }
+    
+    .tier-icon {
+        font-size: 4rem;
+        margin-bottom: 1rem;
+    }
+    
+    .tier-title {
+        font-size: 2rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        text-transform: uppercase;
+        letter-spacing: 2px;
+    }
+    
+    .tier-bronze .tier-title {
+        color: #cd7f32;
+    }
+    
+    .tier-silver .tier-title {
+        color: #c0c0c0;
+    }
+    
+    .tier-gold .tier-title {
+        color: #ffd700;
+    }
+    
+    .tier-platinum .tier-title {
+        color: #9370db;
+    }
+    
+    .benefit-list {
+        list-style: none;
+        padding: 0;
+    }
+    
+    .benefit-list li {
+        padding: 0.8rem;
+        background: #f3f4f6;
+        border-radius: 8px;
+        margin-bottom: 0.8rem;
+        transition: all 0.2s;
+    }
+    
+    .benefit-list li:hover {
+        background: #e5e7eb;
+        transform: translateX(5px);
+    }
+    
+    .benefit-list li i {
+        color: #10b981;
+        margin-right: 0.8rem;
+        width: 20px;
+    }
+    
+    .requirements-badge {
+        display: inline-block;
+        padding: 0.5rem 1.5rem;
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        border-radius: 50px;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <!-- Hero Section -->
+    <div class="tier-hero">
+        <div class="container text-center">
+            <h1 class="mb-3">
+                <i class="fas fa-medal"></i> Membership Tiers
+            </h1>
+            <p class="lead mb-4">
+                Unlock exclusive benefits as you shop and earn points!
+            </p>
+            <p class="mb-0">
+                Your current tier: 
+                <strong style="font-size: 1.3rem;">{{ reward_account.get_tier_display }}</strong>
+            </p>
+        </div>
+    </div>
+
+    <!-- Tiers Grid -->
+    <div class="row">
+        {% for tier in tiers %}
+        <div class="col-lg-6 mb-4">
+            <div class="tier-card tier-{{ tier.key }} {% if current_tier == tier.key %}active{% endif %}">
+                <div class="text-center">
+                    <div class="tier-icon">{{ tier.icon }}</div>
+                    <h2 class="tier-title">{{ tier.name }}</h2>
+                    <div class="requirements-badge">
+                        {% if tier.min_points == 0 %}
+                        Starting Tier
+                        {% else %}
+                        {{ tier.min_points }}+ Total Points
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <h5 class="mb-3">
+                    <i class="fas fa-star"></i> Benefits
+                </h5>
+                <ul class="benefit-list">
+                    {% for benefit in tier.benefits %}
+                    <li>
+                        <i class="fas fa-check-circle"></i>
+                        {{ benefit }}
+                    </li>
+                    {% endfor %}
+                </ul>
+                
+                {% if current_tier == tier.key %}
+                <div class="alert alert-success mt-3 mb-0">
+                    <i class="fas fa-check-circle"></i> 
+                    <strong>You're here!</strong> Enjoy all these amazing benefits.
+                </div>
+                {% elif tier.min_points > reward_account.total_earned %}
+                <div class="alert alert-info mt-3 mb-0">
+                    <i class="fas fa-lock"></i> 
+                    Earn <strong>{{ tier.min_points|add:reward_account.total_earned|add:"-"|cut:" " }}</strong> more points to unlock!
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- How to Upgrade -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-white">
+            <h5 class="mb-0">
+                <i class="fas fa-rocket"></i> How to Upgrade Your Tier
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <div class="text-center p-3">
+                        <i class="fas fa-shopping-cart fa-3x mb-3" style="color: #667eea;"></i>
+                        <h6>Shop More</h6>
+                        <p class="text-muted small">Earn points with every purchase</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="text-center p-3">
+                        <i class="fas fa-star fa-3x mb-3" style="color: #667eea;"></i>
+                        <h6>Write Reviews</h6>
+                        <p class="text-muted small">Get bonus points for sharing your experience</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="text-center p-3">
+                        <i class="fas fa-users fa-3x mb-3" style="color: #667eea;"></i>
+                        <h6>Refer Friends</h6>
+                        <p class="text-muted small">Earn points when friends make purchases</p>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center mt-3">
+                <a href="{% url 'rewards:earn_info' %}" class="btn btn-primary me-2">
+                    <i class="fas fa-info-circle"></i> Learn More
+                </a>
+                <a href="{% url 'rewards:dashboard' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

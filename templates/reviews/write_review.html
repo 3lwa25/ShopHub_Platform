@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Write Review - {{ product.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <!-- Breadcrumb -->
+            <nav aria-label="breadcrumb" class="mb-4">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'core:home' %}">Home</a></li>
+                    <li class="breadcrumb-item"><a href="{% url 'products:product_detail' product.slug %}">{{ product.title }}</a></li>
+                    <li class="breadcrumb-item active">Write Review</li>
+                </ol>
+            </nav>
+
+            <!-- Product Info -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col-md-3">
+                            {% if product.images.all %}
+                                <img src="{{ product.images.first.image.url }}" 
+                                     class="img-fluid rounded" 
+                                     alt="{{ product.title }}">
+                            {% endif %}
+                        </div>
+                        <div class="col-md-9">
+                            <h5 class="mb-1">{{ product.title }}</h5>
+                            <p class="text-muted mb-0">Order: {{ order_item.order.order_number }}</p>
+                            <p class="text-muted small mb-0">Purchased on {{ order_item.order.created_at|date:"M d, Y" }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Review Form -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h4 class="mb-0">Write Your Review</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data" novalidate>
+                        {% csrf_token %}
+                        {{ form.order_item }}
+                        
+                        <!-- Star Rating -->
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Your Rating *</label>
+                            <div class="star-rating mb-2" data-rating="0">
+                                <i class="far fa-star star" data-rating="1"></i>
+                                <i class="far fa-star star" data-rating="2"></i>
+                                <i class="far fa-star star" data-rating="3"></i>
+                                <i class="far fa-star star" data-rating="4"></i>
+                                <i class="far fa-star star" data-rating="5"></i>
+                            </div>
+                            <small class="text-muted">Click on a star to rate</small>
+                            {{ form.rating }}
+                            {% if form.rating.errors %}
+                                <div class="text-danger small">{{ form.rating.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Review Title -->
+                        <div class="mb-3">
+                            {{ form.title.label_tag }}
+                            {{ form.title }}
+                            {% if form.title.errors %}
+                                <div class="text-danger small">{{ form.title.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Review Body -->
+                        <div class="mb-3">
+                            {{ form.body.label_tag }}
+                            {{ form.body }}
+                            {% if form.body.errors %}
+                                <div class="text-danger small">{{ form.body.errors }}</div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Image Upload -->
+                        <div class="mb-3">
+                            <label class="form-label">Upload Photos (Optional, max 5)</label>
+                            <input type="file" name="images" class="form-control" accept="image/*" multiple>
+                            <small class="text-muted">You can upload up to 5 photos with your review</small>
+                        </div>
+
+                        <div class="d-flex justify-content-between">
+                            <a href="{% url 'products:product_detail' product.slug %}" class="btn btn-outline-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Submit Review</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const stars = document.querySelectorAll('.star');
+    const ratingInput = document.getElementById('id_rating');
+    const starContainer = document.querySelector('.star-rating');
+    
+    stars.forEach(star => {
+        star.addEventListener('click', function() {
+            const rating = parseInt(this.dataset.rating);
+            ratingInput.value = rating;
+            
+            // Update star display
+            stars.forEach((s, index) => {
+                if (index < rating) {
+                    s.classList.remove('far');
+                    s.classList.add('fas', 'text-warning');
+                } else {
+                    s.classList.remove('fas', 'text-warning');
+                    s.classList.add('far');
+                }
+            });
+        });
+        
+        star.addEventListener('mouseenter', function() {
+            const rating = parseInt(this.dataset.rating);
+            stars.forEach((s, index) => {
+                if (index < rating) {
+                    s.classList.add('text-warning');
+                } else {
+                    s.classList.remove('text-warning');
+                }
+            });
+        });
+    });
+    
+    starContainer.addEventListener('mouseleave', function() {
+        const currentRating = parseInt(ratingInput.value) || 0;
+        stars.forEach((s, index) => {
+            if (index < currentRating) {
+                s.classList.remove('far');
+                s.classList.add('fas', 'text-warning');
+            } else {
+                s.classList.remove('fas', 'text-warning');
+                s.classList.add('far');
+            }
+        });
+    });
+});
+</script>
+{% endblock %}
+{% endblock %}
+

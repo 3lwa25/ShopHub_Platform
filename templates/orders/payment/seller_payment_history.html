@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+
+{% block title %}Seller Payment Summary - Shop Hub{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">Payment Summary</h1>
+            <p class="text-muted mb-0">Track transactions that include your products.</p>
+        </div>
+        <a href="{% url 'accounts:seller_dashboard' %}" class="btn btn-outline-secondary"><i class="fas fa-arrow-left"></i> Seller Dashboard</a>
+    </div>
+
+    <div class="card shadow-sm border-0">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th scope="col">Date</th>
+                            <th scope="col">Order</th>
+                            <th scope="col">Buyer</th>
+                            <th scope="col">Payment Method</th>
+                            <th scope="col">Transaction Details</th>
+                            <th scope="col">Transaction Status</th>
+                            <th scope="col" class="text-end">Items Sold</th>
+                            <th scope="col" class="text-end">Your Share</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in transactions %}
+                            <tr>
+                                <td>{{ row.transaction.created_at|date:"M d, Y H:i" }}</td>
+                                <td>
+                                    <a href="{% url 'orders:seller_order_detail' row.transaction.order.order_number %}">
+                                        {{ row.transaction.order.order_number }}
+                                    </a>
+                                </td>
+                                <td>
+                                    {% if row.transaction.order.buyer %}
+                                        <div>{{ row.transaction.order.buyer.full_name|default:row.transaction.order.buyer.email }}</div>
+                                        <div class="small text-muted">{{ row.transaction.order.buyer.email }}</div>
+                                    {% else %}
+                                        <span class="text-muted">Guest</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ row.transaction.get_payment_method_display }}</td>
+                                <td>
+                                    {% if row.transaction.payment_method in 'credit_card,paypal' %}
+                                        {% if row.transaction.card_brand %}
+                                            <div class="small">{{ row.transaction.card_brand }}</div>
+                                            <div class="small text-muted">****{{ row.transaction.card_last4 }}</div>
+                                        {% endif %}
+                                        {% if row.transaction.gateway_transaction_id %}
+                                            <div class="small text-muted">ID: {{ row.transaction.gateway_transaction_id|truncatechars:15 }}</div>
+                                        {% endif %}
+                                    {% elif row.transaction.payment_method == 'cod' %}
+                                        <div class="small text-muted">Cash on Delivery</div>
+                                        <div class="small text-muted">Transaction ID: {{ row.transaction.transaction_id|truncatechars:15 }}</div>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if row.transaction.status == 'pending' %}
+                                        <span class="badge bg-warning text-dark">Pending</span>
+                                    {% elif row.transaction.status == 'completed' %}
+                                        <span class="badge bg-success">Approved Payment</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">{{ row.transaction.get_status_display }}</span>
+                                    {% endif %}
+                                </td>
+                                <td class="text-end">{{ row.item_count }}</td>
+                                <td class="text-end">EGP {{ row.seller_subtotal|floatformat:2 }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center text-muted py-4">No payment activity found for your store yet.</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

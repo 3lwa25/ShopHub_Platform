@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block title %}Seller Account Pending - Shop Hub{% endblock %}
+
+{% block content %}
+<div class="container py-5 text-center">
+    <div class="mx-auto" style="max-width: 600px;">
+        <i class="fas fa-hourglass-half fa-4x text-warning mb-4"></i>
+        <h1 class="h3 mb-3">Your Seller Account is Under Review</h1>
+        <p class="text-muted">Thank you for registering as a seller on Shop Hub. Our team is reviewing your application. You will receive an email once your account is approved.</p>
+        <div class="card shadow-sm border-0 mt-4">
+            <div class="card-body">
+                <h2 class="h6 text-uppercase text-muted">Seller Details</h2>
+                <p class="mb-1"><strong>Business Name:</strong> {{ seller_profile.business_name }}</p>
+                <p class="mb-1"><strong>Email:</strong> {{ seller_profile.user.email }}</p>
+                <p class="mb-1"><strong>Country:</strong> {{ seller_profile.country }}</p>
+            </div>
+        </div>
+        <div class="mt-4">
+            <a href="{% url 'accounts:profile' %}" class="btn btn-outline-light">Back to Profile</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

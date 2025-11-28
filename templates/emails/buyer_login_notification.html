@@ -1,0 +1,38 @@
+{% extends 'emails/base_email.html' %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
+    <div style="text-align: center; margin-bottom: 30px;">
+        <h1 style="color: #007bff; margin: 0;">Shop Hub</h1>
+    </div>
+    
+    <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px;">
+        <h2 style="color: #333; margin-top: 0;">New Login Detected</h2>
+        <p style="color: #666; font-size: 16px; line-height: 1.6;">
+            Hi {{ user.full_name|default:user.email }},
+        </p>
+        <p style="color: #666; font-size: 16px; line-height: 1.6;">
+            We noticed a new login to your Shop Hub account.
+        </p>
+        <div style="background: white; padding: 15px; border-radius: 5px; margin: 20px 0;">
+            <p style="margin: 5px 0; color: #333;"><strong>Login Time:</strong> {{ login_time|date:"F d, Y H:i" }}</p>
+            <p style="margin: 5px 0; color: #333;"><strong>IP Address:</strong> {{ ip_address|default:"Unknown" }}</p>
+        </div>
+        <p style="color: #666; font-size: 14px; line-height: 1.6;">
+            If this wasn't you, please secure your account immediately by changing your password.
+        </p>
+    </div>
+    
+    <div style="text-align: center; margin: 30px 0;">
+        <a href="{{ site_url }}{% url 'accounts:profile' %}" 
+           style="background: #007bff; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block;">
+            View My Account
+        </a>
+    </div>
+    
+    <p style="color: #999; font-size: 12px; text-align: center; margin-top: 30px;">
+        This is an automated security notification. If you have concerns, contact our support team.
+    </p>
+</div>
+{% endblock %}
+

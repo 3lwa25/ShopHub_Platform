@@ -1,0 +1,173 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Order Tracking - Seller Dashboard{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="h3"><i class="fas fa-truck"></i> Order Tracking</h1>
+            <p class="text-muted">Order: <strong>{{ order.order_number }}</strong></p>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'orders:seller_order_detail' order.order_number %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Order
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-8">
+            <!-- Tracking Timeline -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Tracking Timeline</h5>
+                </div>
+                <div class="card-body">
+                    <div class="tracking-timeline">
+                        {% for status in statuses %}
+                        <div class="timeline-item {% if forloop.counter0 <= current_index %}completed{% endif %}">
+                            <div class="timeline-marker">
+                                {% if forloop.counter0 < current_index %}
+                                <i class="fas fa-check-circle"></i>
+                                {% elif forloop.counter0 == current_index %}
+                                <i class="fas fa-circle"></i>
+                                {% else %}
+                                <i class="far fa-circle"></i>
+                                {% endif %}
+                            </div>
+                            <div class="timeline-content">
+                                <h6 class="mb-1">{{ status|title|replace:"_":" " }}</h6>
+                                {% if forloop.counter0 <= current_index %}
+                                    {% for update in tracking.history %}
+                                        {% if update.status == status %}
+                                        <small class="text-muted d-block">
+                                            <i class="fas fa-clock"></i> {{ update.timestamp|date:"M d, Y H:i" }}
+                                        </small>
+                                        {% if update.location %}
+                                        <small class="text-muted d-block">
+                                            <i class="fas fa-map-marker-alt"></i> {{ update.location }}
+                                        </small>
+                                        {% endif %}
+                                        {% endif %}
+                                    {% endfor %}
+                                {% else %}
+                                <small class="text-muted">Pending</small>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <!-- Status Update Form -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Update Status</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="status" class="form-label">Current Status</label>
+                            <select name="status" id="status" class="form-select" required>
+                                {% for status in statuses %}
+                                <option value="{{ status }}" {% if status == tracking.current_status %}selected{% endif %}>
+                                    {{ status|title|replace:"_":" " }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">
+                            <i class="fas fa-save"></i> Update Status
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Tracking Info -->
+            <div class="card shadow-sm mt-3">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Tracking Information</h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-2"><strong>Tracking Number:</strong><br>{{ tracking.tracking_number }}</p>
+                    <p class="mb-2"><strong>Courier:</strong><br>{{ tracking.courier_name }}</p>
+                    {% if tracking.estimated_delivery %}
+                    <p class="mb-0"><strong>Estimated Delivery:</strong><br>{{ tracking.estimated_delivery|date:"M d, Y" }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.tracking-timeline {
+    position: relative;
+    padding-left: 30px;
+}
+
+.timeline-item {
+    position: relative;
+    padding-bottom: 30px;
+    padding-left: 40px;
+}
+
+.timeline-item:not(:last-child)::before {
+    content: '';
+    position: absolute;
+    left: 15px;
+    top: 30px;
+    width: 2px;
+    height: calc(100% - 10px);
+    background: #dee2e6;
+}
+
+.timeline-item.completed:not(:last-child)::before {
+    background: #28a745;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: #fff;
+    border: 2px solid #dee2e6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
+}
+
+.timeline-item.completed .timeline-marker {
+    background: #28a745;
+    border-color: #28a745;
+    color: white;
+}
+
+.timeline-item:not(.completed) .timeline-marker {
+    background: #fff;
+    border-color: #dee2e6;
+    color: #6c757d;
+}
+
+.timeline-content h6 {
+    color: #333;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.timeline-item.completed .timeline-content h6 {
+    color: #28a745;
+}
+</style>
+{% endblock %}
+

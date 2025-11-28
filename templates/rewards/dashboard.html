@@ -1,0 +1,405 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Rewards Dashboard - Shop Hub{% endblock %}
+
+{% block extra_css %}
+<style>
+    .rewards-hero {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 3rem 0;
+        border-radius: 15px;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    }
+    
+    .points-card {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 15px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        transition: transform 0.3s;
+    }
+    
+    .points-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .tier-badge {
+        display: inline-block;
+        padding: 0.5rem 1.5rem;
+        border-radius: 50px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+    
+    .tier-bronze {
+        background: linear-gradient(135deg, #cd7f32 0%, #b8860b 100%);
+        color: white;
+    }
+    
+    .tier-silver {
+        background: linear-gradient(135deg, #c0c0c0 0%, #808080 100%);
+        color: white;
+    }
+    
+    .tier-gold {
+        background: linear-gradient(135deg, #ffd700 0%, #ffaa00 100%);
+        color: #333;
+    }
+    
+    .tier-platinum {
+        background: linear-gradient(135deg, #e5e4e2 0%, #9370db 100%);
+        color: white;
+    }
+    
+    .progress-tier {
+        height: 30px;
+        border-radius: 15px;
+        background: rgba(255, 255, 255, 0.2);
+        overflow: hidden;
+    }
+    
+    .progress-tier .progress-bar {
+        background: linear-gradient(90deg, #00c9ff 0%, #92fe9d 100%);
+        border-radius: 15px;
+        transition: width 1s ease-in-out;
+    }
+    
+    .stat-card {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s;
+        border: 2px solid transparent;
+    }
+    
+    .stat-card:hover {
+        border-color: #667eea;
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+    }
+    
+    .stat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.8rem;
+        margin-bottom: 1rem;
+    }
+    
+    .reward-item {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+        transition: all 0.3s;
+        border: 2px solid transparent;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .reward-item:hover {
+        border-color: #667eea;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+    }
+    
+    .reward-item.locked {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+    
+    .reward-item.locked::before {
+        content: '🔒';
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        font-size: 1.5rem;
+    }
+    
+    .transaction-item {
+        background: white;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 0.8rem;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+        transition: all 0.2s;
+    }
+    
+    .transaction-item:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+    
+    .points-earned {
+        color: #10b981;
+        font-weight: 700;
+    }
+    
+    .points-redeemed {
+        color: #ef4444;
+        font-weight: 700;
+    }
+    
+    .benefit-item {
+        padding: 0.8rem;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        margin-bottom: 0.5rem;
+        backdrop-filter: blur(10px);
+    }
+    
+    .benefit-item i {
+        color: #10b981;
+        margin-right: 0.8rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <!-- Hero Section -->
+    <div class="rewards-hero">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="mb-3">
+                        <i class="fas fa-trophy"></i> 
+                        Welcome to Your Rewards Dashboard
+                    </h1>
+                    <p class="lead mb-4">
+                        Track your points, redeem rewards, and unlock exclusive benefits!
+                    </p>
+                    <div class="tier-badge tier-{{ reward_account.tier }}">
+                        {{ reward_account.get_tier_display }} Member
+                    </div>
+                    <div class="mt-3">
+                        <a href="{% url 'notifications:center' %}" class="btn btn-light btn-sm me-2">
+                            <i class="fas fa-bell"></i> Notifications
+                        </a>
+                        <a href="{% url 'rewards:gift_points' %}" class="btn btn-outline-light btn-sm">
+                            <i class="fas fa-gift"></i> Gift Points
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-4 text-center">
+                    <div class="points-card">
+                        <h2 class="mb-2">{{ reward_account.points_balance }}</h2>
+                        <p class="mb-0">Available Points</p>
+                        <small>(≈ {{ reward_account.points_value_egp }} EGP)</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tier Progress -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body">
+            <h5 class="card-title mb-3">
+                <i class="fas fa-chart-line"></i> Tier Progress
+            </h5>
+            {% if points_to_next_tier > 0 %}
+            <p class="mb-2">
+                <strong>{{ points_to_next_tier }} points</strong> to reach 
+                <strong>{{ current_tier_info.next }}</strong> tier!
+            </p>
+            <div class="progress-tier mb-3">
+                <div class="progress-bar" role="progressbar" 
+                     style="width: {{ progress_percentage }}%"
+                     aria-valuenow="{{ progress_percentage }}" 
+                     aria-valuemin="0" 
+                     aria-valuemax="100">
+                    {{ progress_percentage|floatformat:0 }}%
+                </div>
+            </div>
+            {% else %}
+            <p class="text-success mb-3">
+                <i class="fas fa-check-circle"></i> 
+                Congratulations! You've reached the highest tier!
+            </p>
+            {% endif %}
+            <a href="{% url 'rewards:tier_info' %}" class="btn btn-outline-primary btn-sm">
+                <i class="fas fa-info-circle"></i> View All Tiers
+            </a>
+        </div>
+    </div>
+
+    <!-- Statistics Row -->
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="stat-card text-center">
+                <div class="stat-icon mx-auto" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                    <i class="fas fa-coins"></i>
+                </div>
+                <h4 class="mb-1">{{ reward_account.total_earned }}</h4>
+                <p class="text-muted mb-0">Total Points Earned</p>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="stat-card text-center">
+                <div class="stat-icon mx-auto" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white;">
+                    <i class="fas fa-gift"></i>
+                </div>
+                <h4 class="mb-1">{{ reward_account.total_spent }}</h4>
+                <p class="text-muted mb-0">Points Redeemed</p>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="stat-card text-center">
+                <div class="stat-icon mx-auto" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white;">
+                    <i class="fas fa-chart-line"></i>
+                </div>
+                <h4 class="mb-1">{{ this_month_earned }}</h4>
+                <p class="text-muted mb-0">Earned This Month</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Available Rewards -->
+        <div class="col-lg-8 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-gift"></i> Available Rewards
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        {% for reward in available_rewards %}
+                        <div class="col-md-6 mb-3">
+                            <div class="reward-item {% if not reward.can_redeem %}locked{% endif %}">
+                                <div class="d-flex align-items-start">
+                                    <div class="me-3">
+                                        <i class="fas fa-{{ reward.icon }} fa-2x" style="color: #667eea;"></i>
+                                    </div>
+                                    <div class="flex-grow-1">
+                                        <h6 class="mb-1">{{ reward.name }}</h6>
+                                        <p class="text-muted small mb-2">{{ reward.description }}</p>
+                                        <div class="d-flex justify-content-between align-items-center">
+                                            <span class="badge bg-primary">{{ reward.points }} points</span>
+                                            {% if reward.can_redeem %}
+                                            <form method="post" action="{% url 'rewards:redeem' %}">
+                                                {% csrf_token %}
+                                                <input type="hidden" name="reward_id" value="{{ reward.id }}">
+                                                <button type="submit" class="btn btn-sm btn-success">
+                                                    <i class="fas fa-check"></i> Redeem
+                                                </button>
+                                            </form>
+                                            {% else %}
+                                            <button class="btn btn-sm btn-secondary" disabled title="{% if not reward.is_available %}Not available{% else %}Need {{ reward.points|add:reward_account.points_balance|add:"-"|cut:" " }} more points{% endif %}">
+                                                <i class="fas fa-lock"></i> Locked
+                                            </button>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="text-center mt-3">
+                        <a href="{% url 'rewards:earn_info' %}" class="btn btn-outline-primary">
+                            <i class="fas fa-info-circle"></i> How to Earn More Points
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Sidebar -->
+        <div class="col-lg-4">
+            <!-- Current Benefits -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h6 class="mb-0">
+                        <i class="fas fa-star"></i> Your {{ reward_account.get_tier_display }} Benefits
+                    </h6>
+                </div>
+                <div class="card-body">
+                    {% for benefit in tier_benefits %}
+                    <div class="benefit-item" style="background: #f3f4f6;">
+                        <i class="fas fa-check-circle"></i>
+                        {{ benefit }}
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Recent Transactions -->
+            <div class="card shadow-sm">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">
+                        <i class="fas fa-history"></i> Recent Activity
+                    </h6>
+                    <a href="{% url 'rewards:history' %}" class="btn btn-sm btn-link">View All</a>
+                </div>
+                <div class="card-body">
+                    {% if recent_transactions %}
+                        {% for transaction in recent_transactions %}
+                        <div class="transaction-item">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <small class="text-muted d-block">
+                                        {{ transaction.created_at|date:"M d, Y" }}
+                                    </small>
+                                    <span class="small">{{ transaction.description }}</span>
+                                </div>
+                                <div class="text-end">
+                                    {% if transaction.amount >= 0 %}
+                                    <span class="points-earned">+{{ transaction.amount }}</span>
+                                    {% else %}
+                                    <span class="points-redeemed">{{ transaction.amount }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <p class="text-muted text-center mb-0">No transactions yet</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Animate progress bar on load
+    document.addEventListener('DOMContentLoaded', function() {
+        const progressBar = document.querySelector('.progress-bar');
+        if (progressBar) {
+            const width = progressBar.style.width;
+            progressBar.style.width = '0%';
+            setTimeout(() => {
+                progressBar.style.width = width;
+            }, 500);
+        }
+    });
+    
+    // Confirm redemption
+    document.querySelectorAll('form[action*="redeem"]').forEach(form => {
+        form.addEventListener('submit', function(e) {
+            const points = this.querySelector('input[name="points_required"]').value;
+            const name = this.querySelector('input[name="reward_name"]').value;
+            
+            if (!confirm(`Are you sure you want to redeem ${points} points for ${name}?`)) {
+                e.preventDefault();
+            }
+        });
+    });
+</script>
+{% endblock %}
+

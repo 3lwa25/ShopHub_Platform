@@ -1,0 +1,25 @@
+Reward Redeemed!
+
+Hi {{ user.get_full_name|default:user.email }},
+
+Congratulations! You've successfully redeemed {{ reward.name }} for {{ reward.points_required }} points.
+
+{% if coupon_code %}
+YOUR COUPON CODE: {{ coupon_code }}
+
+Use this code at checkout to get your discount. The coupon is valid for 30 days.
+{% endif %}
+
+Redemption Details:
+-------------------
+Reward: {{ reward.name }}
+Points Spent: {{ reward.points_required }}
+Redemption Date: {{ redemption.created_at|date:"F d, Y g:i A" }}
+
+View your rewards dashboard: {{ request.get_host }}{% url 'rewards:dashboard' %}
+
+Thank you for being a valued member of Shop Hub!
+
+---
+Shop Hub - Your Rewards Partner
+

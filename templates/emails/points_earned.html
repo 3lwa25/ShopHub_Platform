@@ -1,0 +1,65 @@
+{% extends 'emails/base_email.html' %}
+
+{% block content %}
+<tr>
+    <td style="padding: 40px 30px; background-color: #ffffff;">
+        <h1 style="margin: 0 0 20px 0; color: #10b981; font-size: 28px;">
+            💰 You Earned {{ points }} Points!
+        </h1>
+        
+        <p style="margin: 0 0 15px 0; color: #333333; font-size: 16px; line-height: 24px;">
+            Hi {{ user.get_full_name|default:user.email }},
+        </p>
+        
+        <p style="margin: 0 0 20px 0; color: #333333; font-size: 16px; line-height: 24px;">
+            Great news! You've earned <strong style="color: #10b981;">{{ points }} reward points</strong> 
+            {% if order %}for your order #{{ order.order_number }}{% endif %}!
+        </p>
+        
+        <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); border-radius: 12px; padding: 30px; margin: 20px 0; text-align: center;">
+            <p style="margin: 0 0 10px 0; color: #ffffff; font-size: 16px;">
+                Points Earned
+            </p>
+            <h2 style="margin: 0; color: #ffffff; font-size: 48px; font-weight: 700;">
+                +{{ points }}
+            </h2>
+        </div>
+        
+        {% if order %}
+        <div style="background-color: #f9fafb; border-radius: 8px; padding: 20px; margin: 20px 0;">
+            <h3 style="margin: 0 0 15px 0; color: #333333; font-size: 18px;">Order Details</h3>
+            <table style="width: 100%; border-collapse: collapse;">
+                <tr>
+                    <td style="padding: 8px 0; color: #666666; font-size: 14px; width: 40%;">Order Number:</td>
+                    <td style="padding: 8px 0; color: #333333; font-size: 14px; font-weight: 600;">#{{ order.order_number }}</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px 0; color: #666666; font-size: 14px;">Order Total:</td>
+                    <td style="padding: 8px 0; color: #333333; font-size: 14px; font-weight: 600;">{{ order.total_amount }} EGP</td>
+                </tr>
+                <tr>
+                    <td style="padding: 8px 0; color: #666666; font-size: 14px;">Points Earned:</td>
+                    <td style="padding: 8px 0; color: #10b981; font-size: 14px; font-weight: 700;">{{ points }} points</td>
+                </tr>
+            </table>
+        </div>
+        {% endif %}
+        
+        <p style="margin: 20px 0; color: #666666; font-size: 14px; line-height: 22px;">
+            These points can be redeemed for discounts, free shipping, and exclusive rewards!
+        </p>
+        
+        <div style="text-align: center; margin: 30px 0;">
+            <a href="{{ site_url }}{% url 'rewards:dashboard' %}" 
+               style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: #ffffff; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
+                View Available Rewards
+            </a>
+        </div>
+        
+        <p style="margin: 20px 0 0 0; color: #666666; font-size: 14px; line-height: 22px;">
+            Keep shopping to earn more points and unlock exclusive benefits!
+        </p>
+    </td>
+</tr>
+{% endblock %}
+

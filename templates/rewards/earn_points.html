@@ -1,0 +1,212 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}How to Earn Points - Shop Hub{% endblock %}
+
+{% block extra_css %}
+<style>
+    .earn-hero {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        padding: 3rem 0;
+        border-radius: 15px;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+    
+    .method-card {
+        background: white;
+        border-radius: 15px;
+        padding: 2rem;
+        text-align: center;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        transition: all 0.3s;
+        height: 100%;
+        border: 2px solid transparent;
+    }
+    
+    .method-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.15);
+        border-color: #667eea;
+    }
+    
+    .method-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.5rem;
+        font-size: 2rem;
+        color: white;
+    }
+    
+    .points-badge {
+        display: inline-block;
+        padding: 0.5rem 1.5rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 50px;
+        font-weight: 700;
+        margin-top: 1rem;
+    }
+    
+    .quick-tip {
+        background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+        border-radius: 12px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+    }
+    
+    .quick-tip i {
+        font-size: 1.5rem;
+        margin-right: 1rem;
+    }
+    
+    .current-balance-card {
+        background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+        border-radius: 15px;
+        padding: 2rem;
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <!-- Hero Section -->
+    <div class="earn-hero">
+        <div class="container">
+            <h1 class="mb-3">
+                <i class="fas fa-coins"></i> How to Earn Points
+            </h1>
+            <p class="lead mb-0">
+                Discover all the ways you can earn rewards points!
+            </p>
+        </div>
+    </div>
+
+    <!-- Current Balance -->
+    <div class="current-balance-card">
+        <h2 class="mb-2" style="color: #2c3e50;">{{ reward_account.points_balance }}</h2>
+        <p class="mb-0" style="color: #2c3e50;">Your Current Points Balance</p>
+        <a href="{% url 'rewards:dashboard' %}" class="btn btn-dark mt-3">
+            <i class="fas fa-tachometer-alt"></i> Go to Dashboard
+        </a>
+    </div>
+
+    <!-- Earning Methods -->
+    <h3 class="text-center mb-4">Ways to Earn Points</h3>
+    <div class="row mb-5">
+        {% for method in earning_methods %}
+        <div class="col-lg-4 col-md-6 mb-4">
+            <div class="method-card">
+                <div class="method-icon" style="background: linear-gradient(135deg, {{ forloop.counter|divisibleby:2|yesno:'#667eea,#f093fb' }} 0%, {{ forloop.counter|divisibleby:2|yesno:'#764ba2,#f5576c' }} 100%);">
+                    <i class="fas fa-{{ method.icon }}"></i>
+                </div>
+                <h5 class="mb-3">{{ method.title }}</h5>
+                <p class="text-muted mb-3">{{ method.description }}</p>
+                <div class="points-badge">{{ method.points }}</div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Quick Tips -->
+    <div class="row">
+        <div class="col-lg-6 mb-4">
+            <div class="quick-tip">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-lightbulb" style="color: #f59e0b;"></i>
+                    <div>
+                        <h6 class="mb-1" style="color: #2c3e50;">Pro Tip: Shop Smart</h6>
+                        <p class="mb-0" style="color: #2c3e50;">Wait for special promotions to earn double or triple points on purchases!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6 mb-4">
+            <div class="quick-tip">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-calendar-check" style="color: #10b981;"></i>
+                    <div>
+                        <h6 class="mb-1" style="color: #2c3e50;">Daily Activities</h6>
+                        <p class="mb-0" style="color: #2c3e50;">Log in daily, browse new products, and engage with the community for bonus points!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6 mb-4">
+            <div class="quick-tip">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-trophy" style="color: #8b5cf6;"></i>
+                    <div>
+                        <h6 class="mb-1" style="color: #2c3e50;">Tier Benefits</h6>
+                        <p class="mb-0" style="color: #2c3e50;">Higher tiers earn more points per purchase. Check your tier status!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-6 mb-4">
+            <div class="quick-tip">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-gift" style="color: #ec4899;"></i>
+                    <div>
+                        <h6 class="mb-1" style="color: #2c3e50;">Seasonal Bonuses</h6>
+                        <p class="mb-0" style="color: #2c3e50;">Watch out for holiday and seasonal bonus point events!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Points Value -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-white">
+            <h5 class="mb-0">
+                <i class="fas fa-calculator"></i> Points Value
+            </h5>
+        </div>
+        <div class="card-body">
+            <div class="row text-center">
+                <div class="col-md-4 mb-3">
+                    <div class="p-3">
+                        <i class="fas fa-coins fa-3x mb-3" style="color: #667eea;"></i>
+                        <h4>100 Points</h4>
+                        <p class="text-muted mb-0">= 1 EGP Discount</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="p-3">
+                        <i class="fas fa-shopping-bag fa-3x mb-3" style="color: #667eea;"></i>
+                        <h4>1 EGP Spent</h4>
+                        <p class="text-muted mb-0">= 10 Points Earned</p>
+                    </div>
+                </div>
+                <div class="col-md-4 mb-3">
+                    <div class="p-3">
+                        <i class="fas fa-percentage fa-3x mb-3" style="color: #667eea;"></i>
+                        <h4>No Limits</h4>
+                        <p class="text-muted mb-0">Earn & redeem anytime</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Call to Action -->
+    <div class="text-center mt-5">
+        <h3 class="mb-4">Ready to Start Earning?</h3>
+        <a href="{% url 'products:product_list' %}" class="btn btn-lg btn-primary me-2">
+            <i class="fas fa-shopping-bag"></i> Shop Now
+        </a>
+        <a href="{% url 'rewards:tier_info' %}" class="btn btn-lg btn-outline-secondary">
+            <i class="fas fa-medal"></i> View Tiers
+        </a>
+    </div>
+</div>
+{% endblock %}
+

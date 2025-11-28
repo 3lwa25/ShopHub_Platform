@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}Payment {{ status|title }} - Order {{ order.order_number }}{% endblock %}
+
+{% block content %}
+<div class="container py-5 text-center">
+    {% if status == 'completed' %}
+        <i class="fas fa-check-circle fa-4x text-success mb-3"></i>
+        <h1 class="h3 mb-3">Payment Successful</h1>
+        <p class="text-muted">Thank you! Your payment has been processed successfully. A receipt has been emailed to you.</p>
+    {% elif status == 'pending' %}
+        <i class="fas fa-hourglass-half fa-4x text-warning mb-3"></i>
+        <h1 class="h3 mb-3">Payment Pending</h1>
+        <p class="text-muted">Your payment is pending. Please prepare cash upon delivery or follow the instructions in your email.</p>
+    {% else %}
+        <i class="fas fa-info-circle fa-4x text-primary mb-3"></i>
+        <h1 class="h3 mb-3">Payment Update</h1>
+        <p class="text-muted">Your payment has been updated. Check the details below.</p>
+    {% endif %}
+
+    <div class="card shadow-sm border-0 mt-4 text-start mx-auto" style="max-width: 560px;">
+        <div class="card-body">
+            <p class="mb-1"><strong>Order:</strong> {{ order.order_number }}</p>
+            <p class="mb-1"><strong>Amount:</strong> EGP {{ transaction.amount|floatformat:2 }}</p>
+            <p class="mb-1"><strong>Payment Method:</strong> {{ payment_method|title }}</p>
+            <p class="mb-1"><strong>Transaction Status:</strong> {{ transaction.get_status_display }}</p>
+            {% if transaction.gateway_transaction_id %}
+                <p class="mb-1"><strong>Gateway Reference:</strong> {{ transaction.gateway_transaction_id }}</p>
+            {% endif %}
+            {% if transaction.card_brand %}
+                <p class="mb-0"><strong>Card:</strong> {{ transaction.card_brand }} •••• {{ transaction.card_last4 }}</p>
+            {% endif %}
+        </div>
+    </div>
+
+    <div class="mt-4 d-flex justify-content-center gap-3">
+        <a href="{% url 'orders:buyer_order_detail' order.order_number %}" class="btn btn-primary">View Order</a>
+        <a href="{% url 'orders:buyer_payment_history' %}" class="btn btn-outline-secondary">Payment History</a>
+    </div>
+</div>
+{% endblock %}

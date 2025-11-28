@@ -1,0 +1,259 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Reviews - {{ product.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'core:home' %}">Home</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'products:product_detail' product.slug %}">{{ product.title }}</a></li>
+            <li class="breadcrumb-item active">Reviews</li>
+        </ol>
+    </nav>
+
+    <div class="row">
+        <div class="col-lg-3">
+            <!-- Review Summary -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-body text-center">
+                    <h2 class="display-4 mb-2">{{ avg_rating }}</h2>
+                    <div class="mb-2">
+                        {% for i in "12345" %}
+                            {% if forloop.counter <= avg_rating|floatformat:0|add:"0" %}
+                                <i class="fas fa-star text-warning"></i>
+                            {% elif forloop.counter|add:"-1" < avg_rating|floatformat:0|add:"0" %}
+                                <i class="fas fa-star-half-alt text-warning"></i>
+                            {% else %}
+                                <i class="far fa-star text-muted"></i>
+                            {% endif %}
+                        {% endfor %}
+                    </div>
+                    <p class="text-muted mb-0">{{ total_reviews }} review{{ total_reviews|pluralize }}</p>
+                </div>
+            </div>
+
+            <!-- Rating Distribution -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">Rating Breakdown</h6>
+                </div>
+                <div class="card-body">
+                    {% for i in "54321" %}
+                        <div class="d-flex align-items-center mb-2">
+                            <span class="me-2">{{ i }}★</span>
+                            <div class="progress flex-grow-1" style="height: 8px;">
+                                {% for dist in rating_distribution %}
+                                    {% if dist.rating == i|add:"0" %}
+                                        <div class="progress-bar" role="progressbar" 
+                                             style="width: {% widthratio dist.count total_reviews 100 %}%"></div>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                            <span class="ms-2 small text-muted">
+                                {% for dist in rating_distribution %}
+                                    {% if dist.rating == i|add:"0" %}{{ dist.count }}{% endif %}
+                                {% empty %}0{% endfor %}
+                            </span>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h6 class="mb-0">Filters</h6>
+                </div>
+                <div class="card-body">
+                    <form method="get">
+                        <div class="mb-3">
+                            <label class="form-label small">Sort By</label>
+                            <select name="sort" class="form-select form-select-sm">
+                                <option value="recent" {% if sort_by == 'recent' %}selected{% endif %}>Most Recent</option>
+                                <option value="helpful" {% if sort_by == 'helpful' %}selected{% endif %}>Most Helpful</option>
+                                <option value="highest" {% if sort_by == 'highest' %}selected{% endif %}>Highest Rated</option>
+                                <option value="lowest" {% if sort_by == 'lowest' %}selected{% endif %}>Lowest Rated</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label small">Rating</label>
+                            <select name="rating" class="form-select form-select-sm">
+                                <option value="">All Ratings</option>
+                                {% for i in "12345" %}
+                                    <option value="{{ i }}" {% if rating_filter == i %}selected{% endif %}>{{ i }} Star{{ i|pluralize }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-sm w-100">Apply Filters</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-9">
+            <!-- Write Review Button -->
+            {% if can_review %}
+            <div class="card shadow-sm mb-4">
+                <div class="card-body text-center">
+                    <p class="mb-2">Have you purchased this product?</p>
+                    <a href="{% url 'orders:buyer_orders' %}" class="btn btn-primary">
+                        <i class="fas fa-star"></i> Write a Review
+                    </a>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Reviews List -->
+            {% if reviews %}
+                {% for review in reviews %}
+                <div class="card shadow-sm mb-3">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <div>
+                                <h6 class="mb-1">{{ review.title }}</h6>
+                                <div class="mb-2">
+                                    {% for i in "12345" %}
+                                        {% if forloop.counter <= review.rating %}
+                                            <i class="fas fa-star text-warning"></i>
+                                        {% else %}
+                                            <i class="far fa-star text-muted"></i>
+                                        {% endif %}
+                                    {% endfor %}
+                                    <span class="ms-2 small text-muted">{{ review.created_at|date:"M d, Y" }}</span>
+                                </div>
+                            </div>
+                            <div>
+                                {% if review.verified_purchase %}
+                                    <span class="badge bg-success">
+                                        <i class="fas fa-check-circle"></i> Verified Purchase
+                                    </span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <p class="mb-2">{{ review.body }}</p>
+
+                        <!-- Review Images -->
+                        {% if review.images.all %}
+                        <div class="mb-3">
+                            <div class="row g-2">
+                                {% for img in review.images.all %}
+                                <div class="col-auto">
+                                    <img src="{{ img.image.url }}" 
+                                         class="img-thumbnail" 
+                                         style="width: 80px; height: 80px; object-fit: cover; cursor: pointer;"
+                                         onclick="window.open('{{ img.image.url }}', '_blank')"
+                                         alt="Review photo">
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <span class="text-muted small">By {{ review.buyer.full_name|default:review.buyer.email }}</span>
+                            </div>
+                            <div>
+                                <button class="btn btn-sm btn-outline-primary mark-helpful-btn" 
+                                        data-review-id="{{ review.id }}">
+                                    <i class="fas fa-thumbs-up"></i> Helpful ({{ review.helpful_count }})
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Seller Response -->
+                        {% if review.seller_response %}
+                        <div class="mt-3 p-3 bg-light rounded">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <strong class="text-primary">Seller Response</strong>
+                                <small class="text-muted">{{ review.seller_responded_at|date:"M d, Y" }}</small>
+                            </div>
+                            <p class="mb-0">{{ review.seller_response }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+
+                <!-- Pagination -->
+                {% if reviews.has_other_pages %}
+                <nav>
+                    <ul class="pagination justify-content-center">
+                        {% if reviews.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ reviews.previous_page_number }}&sort={{ sort_by }}&rating={{ rating_filter }}">Previous</a>
+                        </li>
+                        {% endif %}
+                        
+                        {% for num in reviews.paginator.page_range %}
+                            {% if reviews.number == num %}
+                            <li class="page-item active"><span class="page-link">{{ num }}</span></li>
+                            {% elif num > reviews.number|add:'-3' and num < reviews.number|add:'3' %}
+                            <li class="page-item">
+                                <a class="page-link" href="?page={{ num }}&sort={{ sort_by }}&rating={{ rating_filter }}">{{ num }}</a>
+                            </li>
+                            {% endif %}
+                        {% endfor %}
+                        
+                        {% if reviews.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ reviews.next_page_number }}&sort={{ sort_by }}&rating={{ rating_filter }}">Next</a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+            {% else %}
+                <div class="card shadow-sm">
+                    <div class="card-body text-center py-5">
+                        <i class="fas fa-comments fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">No reviews yet. Be the first to review this product!</p>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const helpfulButtons = document.querySelectorAll('.mark-helpful-btn');
+    
+    helpfulButtons.forEach(btn => {
+        btn.addEventListener('click', function() {
+            const reviewId = this.dataset.reviewId;
+            const button = this;
+            
+            fetch(`/reviews/helpful/${reviewId}/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    button.innerHTML = `<i class="fas fa-thumbs-up"></i> Helpful (${data.helpful_count})`;
+                    button.classList.remove('btn-outline-primary');
+                    button.classList.add('btn-primary');
+                    button.disabled = true;
+                } else {
+                    alert(data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    });
+});
+</script>
+{% endblock %}
+{% endblock %}
+

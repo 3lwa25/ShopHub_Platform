@@ -1,0 +1,199 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Manage Order {{ order.order_number }} - Seller Portal{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">Order #{{ order.order_number }}</h1>
+            <p class="text-muted mb-0">Placed on {{ order.created_at|date:"M d, Y H:i" }}</p>
+        </div>
+        <a href="{% url 'orders:seller_orders' %}" class="btn btn-outline-secondary">Back to Orders</a>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white border-0">
+                    <h2 class="h5 mb-0">Items for your store</h2>
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush">
+                        {% for item in seller_items %}
+                            <li class="list-group-item d-flex justify-content-between align-items-start">
+                                <div>
+                                    <div class="fw-semibold">{{ item.product_name }}</div>
+                                    <div class="small text-muted">SKU: {{ item.product_sku }}</div>
+                                    <div class="small text-muted">Quantity: {{ item.quantity }}</div>
+                                </div>
+                                <div class="text-end">
+                                    <div>EGP {{ item.unit_price|floatformat:2 }}</div>
+                                    <div class="small">Subtotal: EGP {{ item.subtotal|floatformat:2 }}</div>
+                                    {% if is_delivered %}
+                                        <span class="badge bg-success">Delivered - Order Closed</span>
+                                    {% else %}
+                                        <form method="post" action="{% url 'orders:seller_item_status' order.order_number item.id %}" class="mt-2">
+                                            {% csrf_token %}
+                                            <select name="status" class="form-select form-select-sm">
+                                                {% for value, label in item_status_choices %}
+                                                    <option value="{{ value }}" {% if item.status == value %}selected{% endif %}>{{ label }}</option>
+                                                {% endfor %}
+                                            </select>
+                                            <button type="submit" class="btn btn-sm btn-outline-primary mt-2">Update</button>
+                                        </form>
+                                    {% endif %}
+                                </div>
+                            </li>
+                        {% empty %}
+                            <li class="list-group-item text-center text-muted">No items for you in this order.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0 mb-3">
+                <div class="card-header bg-white border-0">
+                    <h2 class="h5 mb-0">Payment Summary</h2>
+                </div>
+                <div class="card-body">
+                    <p class="fw-semibold mb-1">Payment Status</p>
+                    {% if order.payment_status == 'completed' %}
+                        <span class="badge bg-success mb-2">Approved Payment</span>
+                        {% if invoice and invoice.paid_at %}
+                            <div class="small text-muted">Approved on {{ invoice.paid_at|date:"M d, Y H:i" }}</div>
+                        {% endif %}
+                    {% else %}
+                        <span class="badge bg-warning text-dark mb-2">Pending Payment</span>
+                        <div class="small text-muted mb-2">Awaiting your confirmation</div>
+                        <form method="post" class="mb-3">
+                            {% csrf_token %}
+                            <input type="hidden" name="approve_payment" value="1">
+                            <button type="submit" class="btn btn-success w-100">
+                                <i class="fas fa-check-circle me-1"></i> Approve Payment
+                            </button>
+                        </form>
+                    {% endif %}
+
+                    <p class="fw-semibold mb-1">Method</p>
+                    <div class="small text-muted mb-3">
+                        {{ order.payment_method|title|default:"Not specified" }}
+                        {% if transaction and transaction.gateway_transaction_id %}
+                            <div class="text-muted">Gateway ID: {{ transaction.gateway_transaction_id|truncatechars:18 }}</div>
+                        {% endif %}
+                    </div>
+
+                    {% if invoice %}
+                        <a href="{% url 'orders:invoice_download' order.order_number %}" class="btn btn-outline-primary w-100">
+                            <i class="fas fa-file-invoice me-1"></i> Download Invoice (PDF)
+                        </a>
+                    {% else %}
+                        <div class="alert alert-info mb-0">
+                            <i class="fas fa-info-circle me-1"></i> Invoice will be generated automatically after payment approval.
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card shadow-sm border-0 mb-3">
+                <div class="card-header bg-white border-0">
+                    <h2 class="h5 mb-0">Update Order Status</h2>
+                </div>
+                <div class="card-body">
+                    {% if is_delivered %}
+                        <div class="alert alert-success">
+                            <i class="fas fa-check-circle"></i> This order has been delivered and is now closed. No further changes can be made.
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Status</label>
+                            <input type="text" class="form-control" value="{{ order.get_status_display }}" readonly>
+                        </div>
+                    {% else %}
+                        <form method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="update_status" value="1">
+                            <div class="mb-3">
+                                <label class="form-label">Status</label>
+                                {{ status_form.status }}
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">Note</label>
+                                {{ status_form.note }}
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">Save Status</button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+            {% if has_shipment %}
+            <div class="card shadow-sm border-0 mb-3">
+                <div class="card-header bg-white border-0">
+                    <h2 class="h5 mb-0">Update Tracking Status</h2>
+                </div>
+                <div class="card-body">
+                    <div class="mb-2">
+                        <small class="text-muted">Current Status: <strong>{{ current_shipment.current_status|title }}</strong></small>
+                    </div>
+                    {% if is_delivered %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> Order is delivered. Tracking cannot be updated.
+                        </div>
+                    {% else %}
+                        <form method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="update_tracking_status" value="1">
+                            <div class="mb-3">
+                                <label class="form-label">Tracking Status</label>
+                                {{ tracking_form.tracking_status }}
+                                {% for error in tracking_form.tracking_status.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">{{ tracking_form.location.label }}</label>
+                                {{ tracking_form.location }}
+                                {% for error in tracking_form.location.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label">{{ tracking_form.notes.label }}</label>
+                                {{ tracking_form.notes }}
+                                {% for error in tracking_form.notes.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                            </div>
+                            <button type="submit" class="btn btn-primary w-100">Update Tracking</button>
+                        </form>
+                    {% endif %}
+                    <div class="mt-3 small text-muted">
+                        <strong>Status Sequence:</strong><br>
+                        Ordered → Confirmed → On Pack → Dispatched → Out to Delivery → Delivered
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white border-0">
+                    <h2 class="h5 mb-0">{% if has_shipment %}Update Shipment{% else %}Create Shipment{% endif %}</h2>
+                </div>
+                <div class="card-body">
+                    {% if is_delivered %}
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i> Order is delivered. Shipment cannot be modified.
+                        </div>
+                    {% else %}
+                        <form method="post">
+                            {% csrf_token %}
+                            <input type="hidden" name="create_shipment" value="1">
+                            {% for field in shipment_form %}
+                                <div class="mb-3">
+                                    <label class="form-label">{{ field.label }}</label>
+                                    {{ field }}
+                                    {% for error in field.errors %}<div class="text-danger small">{{ error }}</div>{% endfor %}
+                                </div>
+                            {% endfor %}
+                            <button type="submit" class="btn btn-outline-primary w-100">{% if has_shipment %}Update Shipment{% else %}Create Shipment{% endif %}</button>
+                        </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

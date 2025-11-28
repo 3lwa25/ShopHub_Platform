@@ -1,0 +1,267 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Transaction History - Shop Hub{% endblock %}
+
+{% block extra_css %}
+<style>
+    .history-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 2rem;
+        border-radius: 15px;
+        margin-bottom: 2rem;
+    }
+    
+    .filter-card {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.08);
+        margin-bottom: 2rem;
+    }
+    
+    .transaction-card {
+        background: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        transition: all 0.3s;
+        border-left: 4px solid transparent;
+    }
+    
+    .transaction-card:hover {
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.1);
+        transform: translateX(5px);
+    }
+    
+    .transaction-card.earned {
+        border-left-color: #10b981;
+    }
+    
+    .transaction-card.redeemed {
+        border-left-color: #ef4444;
+    }
+    
+    .transaction-card.bonus {
+        border-left-color: #f59e0b;
+    }
+    
+    .points-badge {
+        font-size: 1.2rem;
+        font-weight: 700;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+    }
+    
+    .points-positive {
+        background: #d1fae5;
+        color: #065f46;
+    }
+    
+    .points-negative {
+        background: #fee2e2;
+        color: #991b1b;
+    }
+    
+    .stats-summary {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        padding: 1.5rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <!-- Header -->
+    <div class="history-header">
+        <div class="d-flex justify-content-between align-items-center">
+            <div>
+                <h2 class="mb-2">
+                    <i class="fas fa-history"></i> Transaction History
+                </h2>
+                <p class="mb-0">Track all your points activity</p>
+            </div>
+            <div class="text-end">
+                <a href="{% url 'rewards:dashboard' %}" class="btn btn-light">
+                    <i class="fas fa-arrow-left"></i> Back to Dashboard
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Summary -->
+    <div class="row mb-4">
+        <div class="col-md-4 mb-3">
+            <div class="stats-summary text-center">
+                <h3 class="mb-1">{{ reward_account.points_balance }}</h3>
+                <p class="mb-0">Current Balance</p>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="stats-summary text-center" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);">
+                <h3 class="mb-1 text-dark">{{ earned_total }}</h3>
+                <p class="mb-0 text-dark">Total Earned (Filtered)</p>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="stats-summary text-center" style="background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);">
+                <h3 class="mb-1 text-dark">{{ redeemed_total }}</h3>
+                <p class="mb-0 text-dark">Total Redeemed (Filtered)</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filter-card">
+        <form method="get" action="{% url 'rewards:history' %}" class="row g-3">
+            <div class="col-md-4">
+                <label for="type" class="form-label">Transaction Type</label>
+                <select name="type" id="type" class="form-select">
+                    <option value="">All Types</option>
+                    {% for value, label in transaction_types %}
+                    <option value="{{ value }}" {% if transaction_type == value %}selected{% endif %}>
+                        {{ label }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4">
+                <label for="range" class="form-label">Date Range</label>
+                <select name="range" id="range" class="form-select">
+                    <option value="">All Time</option>
+                    <option value="week" {% if date_range == 'week' %}selected{% endif %}>Last 7 Days</option>
+                    <option value="month" {% if date_range == 'month' %}selected{% endif %}>This Month</option>
+                    <option value="year" {% if date_range == 'year' %}selected{% endif %}>This Year</option>
+                </select>
+            </div>
+            <div class="col-md-4 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary me-2">
+                    <i class="fas fa-filter"></i> Apply Filters
+                </button>
+                <a href="{% url 'rewards:history' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times"></i> Clear
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Transactions List -->
+    <div class="card shadow-sm">
+        <div class="card-header bg-white">
+            <h5 class="mb-0">
+                <i class="fas fa-list"></i> Transactions
+                <span class="badge bg-secondary">{{ page_obj.paginator.count }} total</span>
+            </h5>
+        </div>
+        <div class="card-body">
+            {% if page_obj %}
+                {% for transaction in page_obj %}
+                <div class="transaction-card {{ transaction.transaction_type }}">
+                    <div class="row align-items-center">
+                        <div class="col-md-1 text-center">
+                            {% if transaction.is_earning %}
+                            <i class="fas fa-plus-circle fa-2x text-success"></i>
+                            {% else %}
+                            <i class="fas fa-minus-circle fa-2x text-danger"></i>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-7">
+                            <h6 class="mb-1">
+                                {{ transaction.get_transaction_type_display }}
+                                {% if transaction.order %}
+                                <small class="text-muted">
+                                    (Order #{{ transaction.order.order_number }})
+                                </small>
+                                {% endif %}
+                            </h6>
+                            <p class="text-muted small mb-1">{{ transaction.description }}</p>
+                            <small class="text-muted">
+                                <i class="far fa-calendar"></i> 
+                                {{ transaction.created_at|date:"F d, Y" }} at {{ transaction.created_at|time:"g:i A" }}
+                            </small>
+                        </div>
+                        <div class="col-md-2 text-center">
+                            {% if transaction.amount >= 0 %}
+                            <span class="points-badge points-positive">
+                                +{{ transaction.amount }}
+                            </span>
+                            {% else %}
+                            <span class="points-badge points-negative">
+                                {{ transaction.amount }}
+                            </span>
+                            {% endif %}
+                        </div>
+                        <div class="col-md-2 text-end">
+                            <small class="text-muted d-block">Balance After</small>
+                            <strong>{{ transaction.balance_after }} pts</strong>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+
+                <!-- Pagination -->
+                {% if page_obj.has_other_pages %}
+                <nav aria-label="Transaction pagination" class="mt-4">
+                    <ul class="pagination justify-content-center">
+                        {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% if transaction_type %}&type={{ transaction_type }}{% endif %}{% if date_range %}&range={{ date_range }}{% endif %}">
+                                <i class="fas fa-angle-double-left"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if transaction_type %}&type={{ transaction_type }}{% endif %}{% if date_range %}&range={{ date_range }}{% endif %}">
+                                <i class="fas fa-angle-left"></i>
+                            </a>
+                        </li>
+                        {% endif %}
+
+                        {% for num in page_obj.paginator.page_range %}
+                        {% if page_obj.number == num %}
+                        <li class="page-item active">
+                            <span class="page-link">{{ num }}</span>
+                        </li>
+                        {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ num }}{% if transaction_type %}&type={{ transaction_type }}{% endif %}{% if date_range %}&range={{ date_range }}{% endif %}">
+                                {{ num }}
+                            </a>
+                        </li>
+                        {% endif %}
+                        {% endfor %}
+
+                        {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if transaction_type %}&type={{ transaction_type }}{% endif %}{% if date_range %}&range={{ date_range }}{% endif %}">
+                                <i class="fas fa-angle-right"></i>
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if transaction_type %}&type={{ transaction_type }}{% endif %}{% if date_range %}&range={{ date_range }}{% endif %}">
+                                <i class="fas fa-angle-double-right"></i>
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+                {% endif %}
+            {% else %}
+                <div class="text-center py-5">
+                    <i class="fas fa-inbox fa-4x text-muted mb-3"></i>
+                    <h5 class="text-muted">No transactions found</h5>
+                    <p class="text-muted">Start shopping to earn points!</p>
+                    <a href="{% url 'products:product_list' %}" class="btn btn-lg btn-primary me-2">
+                        <i class="fas fa-shopping-bag"></i> Shop Now
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+

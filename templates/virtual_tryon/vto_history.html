@@ -1,0 +1,131 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}My Try-On History - Shop Hub{% endblock %}
+
+{% block extra_css %}
+<style>
+    .history-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 40px 20px;
+    }
+    
+    .session-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .session-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .session-images {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 15px;
+    }
+    
+    .history-image {
+        position: relative;
+        border-radius: 8px;
+        overflow: hidden;
+    }
+    
+    .history-image img {
+        width: 100%;
+        height: 200px;
+        object-fit: cover;
+    }
+    
+    .history-image-overlay {
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+        padding: 10px;
+        color: white;
+        font-size: 12px;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+    }
+    
+    .empty-state-icon {
+        font-size: 64px;
+        margin-bottom: 20px;
+        opacity: 0.5;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="history-container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>👗 My Try-On History</h2>
+        <a href="{% url 'virtual_tryon:vto_home' %}" class="btn btn-primary">
+            <i class="fas fa-camera"></i> Try More Products
+        </a>
+    </div>
+    
+    {% if sessions %}
+        {% for session in sessions %}
+        <div class="session-card">
+            <div class="session-header">
+                <div>
+                    <h5 class="mb-1">Session from {{ session.created_at|date:"F d, Y" }}</h5>
+                    <small class="text-muted">{{ session.created_at|date:"g:i A" }}</small>
+                </div>
+                <span class="badge bg-info">{{ session.images.count }} photo(s)</span>
+            </div>
+            
+            <div class="session-images">
+                {% for image in session.images.all %}
+                <div class="history-image">
+                    {% if image.result_image %}
+                        <img src="{{ image.result_image.url }}" alt="VTO Result">
+                        <div class="history-image-overlay">
+                            <strong>{{ image.product.title|truncatewords:5 }}</strong>
+                        </div>
+                    {% elif image.user_photo %}
+                        <img src="{{ image.user_photo.url }}" alt="Original Photo">
+                        <div class="history-image-overlay">
+                            <strong>{{ image.product.title|truncatewords:5 }}</strong>
+                            <br><small>{{ image.status }}</small>
+                        </div>
+                    {% endif %}
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endfor %}
+        
+        <!-- Privacy Notice -->
+        <div class="alert alert-info mt-4">
+            <i class="fas fa-info-circle"></i>
+            <strong>Privacy Notice:</strong> All photos are automatically deleted after 30 days for your privacy and security.
+        </div>
+    {% else %}
+        <div class="empty-state">
+            <div class="empty-state-icon">📸</div>
+            <h3>No Try-On History Yet</h3>
+            <p class="text-muted mb-4">You haven't tried any products virtually yet.</p>
+            <a href="{% url 'virtual_tryon:vto_home' %}" class="btn btn-primary btn-lg">
+                <i class="fas fa-camera"></i> Start Trying Products
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
+

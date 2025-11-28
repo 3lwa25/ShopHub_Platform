@@ -1,239 +1,546 @@
-{% extends 'base.html' %}
 
-{% block title %}Sign Up - Shop Hub{% endblock %}
-
-{% block content %}
-<div class="container my-5">
-    <div class="row justify-content-center">
-        <div class="col-md-6 col-lg-5">
-            <div class="card">
-                <div class="card-header text-center py-4">
-                    <h3 class="mb-0">
-                        <i class="fas fa-user-plus me-2"></i>Create Account
-                    </h3>
-                    <p class="mb-0 mt-2">Join Shop Hub today</p>
-                </div>
-                <div class="card-body p-4">
-                    <!-- Error Messages -->
-                    {% if form.non_field_errors %}
-                        <div class="alert alert-danger d-flex align-items-center mb-3" role="alert">
-                            <i class="fas fa-exclamation-circle me-2"></i>
-                            <div>
-                                {% for error in form.non_field_errors %}
-                                    {{ error }}
-                                {% endfor %}
-                            </div>
-                        </div>
-                    {% endif %}
-
-                    <form method="post" novalidate id="registerForm" enctype="multipart/form-data">
-                        {% csrf_token %}
-                        
-                        <!-- Email -->
-                        <div class="mb-3">
-                            <label for="{{ form.email.id_for_label }}" class="form-label">
-                                <i class="fas fa-envelope me-1"></i>Email Address
-                            </label>
-                            {{ form.email }}
-                            {% if form.email.errors %}
-                                <div class="alert alert-danger d-flex align-items-center mt-1 py-1" role="alert">
-                                    <i class="fas fa-exclamation-circle me-2"></i>
-                                    <small>{{ form.email.errors|first }}</small>
-                                </div>
-                            {% endif %}
-                        </div>
-
-                        <!-- Username -->
-                        <div class="mb-3">
-                            <label for="{{ form.username.id_for_label }}" class="form-label">
-                                <i class="fas fa-user me-1"></i>Username
-                            </label>
-                            {{ form.username }}
-                            {% if form.username.errors %}
-                                <div class="alert alert-danger d-flex align-items-center mt-1 py-1" role="alert">
-                                    <i class="fas fa-exclamation-circle me-2"></i>
-                                    <small>{{ form.username.errors|first }}</small>
-                                </div>
-                            {% endif %}
-                        </div>
-
-                        <!-- Full Name -->
-                        <div class="mb-3">
-                            <label for="{{ form.full_name.id_for_label }}" class="form-label">
-                                <i class="fas fa-id-card me-1"></i>Full Name
-                            </label>
-                            {{ form.full_name }}
-                            {% if form.full_name.errors %}
-                                <div class="alert alert-danger d-flex align-items-center mt-1 py-1" role="alert">
-                                    <i class="fas fa-exclamation-circle me-2"></i>
-                                    <small>{{ form.full_name.errors|first }}</small>
-                                </div>
-                            {% endif %}
-                        </div>
-
-                        <!-- Phone -->
-                        <div class="mb-3">
-                            <label for="{{ form.phone.id_for_label }}" class="form-label">
-                                <i class="fas fa-phone me-1"></i>Phone Number (Optional)
-                            </label>
-                            {{ form.phone }}
-                            {% if form.phone.errors %}
-                                <div class="alert alert-danger d-flex align-items-center mt-1 py-1" role="alert">
-                                    <i class="fas fa-exclamation-circle me-2"></i>
-                                    <small>{{ form.phone.errors|first }}</small>
-                                </div>
-                            {% endif %}
-                        </div>
-
-                        <!-- Role Selection -->
-                        <div class="mb-3">
-                            <label for="{{ form.role.id_for_label }}" class="form-label">
-                                <i class="fas fa-user-tag me-1"></i>I want to...
-                            </label>
-                            {{ form.role }}
-                            {% if form.role.errors %}
-                                <div class="alert alert-danger d-flex align-items-center mt-1 py-1" role="alert">
-                                    <i class="fas fa-exclamation-circle me-2"></i>
-                                    <small>{{ form.role.errors|first }}</small>
-                                </div>
-                            {% endif %}
-                            <small class="text-muted d-block mt-1">
-                                <i class="fas fa-info-circle me-1"></i>Choose "Buyer" to shop or "Seller" to sell products. Admin accounts are managed separately.
-                            </small>
-                        </div>
-
-                        <!-- Password with Toggle -->
-                        <div class="mb-3">
-                            <label for="{{ form.password1.id_for_label }}" class="form-label">
-                                <i class="fas fa-lock me-1"></i>Password
-                            </label>
-                            <div class="input-group">
-                                {{ form.password1 }}
-                                <button class="btn btn-outline-secondary" type="button" id="togglePassword1" aria-label="Toggle password visibility">
-                                    <i class="fas fa-eye" id="togglePassword1Icon"></i>
-                                </button>
-                            </div>
-                            {% if form.password1.errors %}
-                                <div class="alert alert-danger d-flex align-items-center mt-1 py-1" role="alert">
-                                    <i class="fas fa-exclamation-circle me-2"></i>
-                                    <small>{{ form.password1.errors|first }}</small>
-                                </div>
-                            {% endif %}
-                            {% if form.password1.help_text %}
-                                <small class="text-muted d-block mt-1">{{ form.password1.help_text }}</small>
-                            {% endif %}
-                        </div>
-
-                        <!-- Confirm Password with Toggle -->
-                        <div class="mb-4">
-                            <label for="{{ form.password2.id_for_label }}" class="form-label">
-                                <i class="fas fa-lock me-1"></i>Confirm Password
-                            </label>
-                            <div class="input-group">
-                                {{ form.password2 }}
-                                <button class="btn btn-outline-secondary" type="button" id="togglePassword2" aria-label="Toggle password visibility">
-                                    <i class="fas fa-eye" id="togglePassword2Icon"></i>
-                                </button>
-                            </div>
-                            {% if form.password2.errors %}
-                                <div class="alert alert-danger d-flex align-items-center mt-1 py-1" role="alert">
-                                    <i class="fas fa-exclamation-circle me-2"></i>
-                                    <small>{{ form.password2.errors|first }}</small>
-                                </div>
-                            {% endif %}
-                        </div>
-
-                        <!-- Submit Button with Loading State -->
-                        <button type="submit" class="btn btn-primary w-100 py-2 mb-3" id="submitBtn">
-                            <span class="spinner-border spinner-border-sm d-none me-2" id="spinner" role="status" aria-hidden="true"></span>
-                            <span id="buttonText">
-                                <i class="fas fa-user-plus me-2"></i>Create Account
-                            </span>
-                        </button>
-
-                        <!-- Login Link -->
-                        <div class="text-center">
-                            <p class="mb-0">
-                                Already have an account?
-                                <a href="{% url 'accounts:login' %}" class="text-decoration-none">
-                                    Login here
-                                </a>
-                            </p>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-{% endblock %}
-
-{% block extra_js %}
-<script>
-    // Password Visibility Toggle
-    document.addEventListener('DOMContentLoaded', function() {
-        // Toggle for Password 1
-        const togglePassword1 = document.getElementById('togglePassword1');
-        const passwordInput1 = document.getElementById('id_password1');
-        const toggleIcon1 = document.getElementById('togglePassword1Icon');
-
-        if (togglePassword1 && passwordInput1) {
-            togglePassword1.addEventListener('click', function() {
-                const type = passwordInput1.getAttribute('type') === 'password' ? 'text' : 'password';
-                passwordInput1.setAttribute('type', type);
-                
-                // Toggle icon
-                if (type === 'password') {
-                    toggleIcon1.classList.remove('fa-eye-slash');
-                    toggleIcon1.classList.add('fa-eye');
-                } else {
-                    toggleIcon1.classList.remove('fa-eye');
-                    toggleIcon1.classList.add('fa-eye-slash');
-                }
-            });
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign Up - Shophub</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-image: url('{% static "images/Backgroud.jpg" %}');
+            background-size: cover;
+            background-attachment: fixed;
+            background-position: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px; /* Added padding */
         }
 
-        // Toggle for Password 2
-        const togglePassword2 = document.getElementById('togglePassword2');
-        const passwordInput2 = document.getElementById('id_password2');
-        const toggleIcon2 = document.getElementById('togglePassword2Icon');
+        .register-card {
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+            width: 90%;
+            max-width: 1100px;
+            min-height: 600px;
+            max-height: 95vh; /* Adjusted max-height */
+            display: flex;
+            overflow: hidden;
+        }
 
-        if (togglePassword2 && passwordInput2) {
-            togglePassword2.addEventListener('click', function() {
-                const type = passwordInput2.getAttribute('type') === 'password' ? 'text' : 'password';
-                passwordInput2.setAttribute('type', type);
-                
-                // Toggle icon
-                if (type === 'password') {
-                    toggleIcon2.classList.remove('fa-eye-slash');
-                    toggleIcon2.classList.add('fa-eye');
-                } else {
-                    toggleIcon2.classList.remove('fa-eye');
-                    toggleIcon2.classList.add('fa-eye-slash');
+        .custom-input {
+            width: 100%;
+            padding: 0.75rem 1rem; /* py-3 px-4 */
+            border-radius: 0.75rem; /* rounded-xl */
+            border: none;
+            background-color: #f3f4f6; /* bg-gray-100 */
+            color: #111827;
+            transition: all 0.15s;
+        }
+
+        .custom-input::placeholder {
+            color: #6b7280;
+        }
+
+        .custom-input:focus {
+            outline: none;
+            ring: 2px;
+            ring-color: #2563eb;
+            background-color: #fff;
+            box-shadow: 0 0 0 2px #2563eb;
+        }
+
+        .custom-select {
+            width: 100%;
+            padding: 0.75rem 1rem; /* py-3 px-4 */
+            border-radius: 0.75rem; /* rounded-xl */
+            border: none;
+            background-color: #f3f4f6; /* bg-gray-100 */
+            color: #111827;
+            transition: all 0.15s;
+            cursor: pointer;
+            appearance: none; /* Remove default arrow */
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+            background-position: right 0.5rem center;
+            background-repeat: no-repeat;
+            background-size: 1.5em 1.5em;
+            padding-right: 2.5rem; /* Make space for arrow */
+        }
+
+        .custom-select:focus {
+            outline: none;
+            ring: 2px;
+            ring-color: #2563eb;
+            background-color: #fff;
+            box-shadow: 0 0 0 2px #2563eb;
+        }
+
+        .illustration-panel {
+            background-color: #2c3e50;
+            background-image: url('{% static "images/illust.png" %}');
+            background-size: contain; /* WAS: cover */
+            background-position: center center;
+            background-repeat: no-repeat; /* Added this */
+            position: relative;
+            overflow: hidden;
+            width: 50%;
+            flex-shrink: 0; /* Prevent panel from shrinking */
+        }
+
+        .shophub-logo {
+            position: absolute;
+            top: 30px;
+            left: 30px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 10;
+        }
+
+        .shophub-logo img {
+            width: 80px; /* Was 40px */
+            height: 80px; /* Was 40px */
+            object-fit: contain;
+            display: block;
+        }
+
+        .shophub-logo span {
+            font-size: 2.5rem; /* Was 1.5rem */
+            font-weight: 700;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .circles-image-left {
+            /* REMOVED THIS ENTIRE RULE */
+        }
+
+        .welcome-text {
+            position: absolute;
+            bottom: 40px;
+            left: 40px;
+            font-size: 5rem; /* Was 5.5rem */
+            font-weight: 800;
+            line-height: 1;
+            color: white;
+            z-index: 2;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .primary-btn {
+            background-color: #3452B3;
+            transition: all 0.2s;
+        }
+
+        .primary-btn:hover {
+            background-color: #2e47a0;
+        }
+
+        .primary-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        @media (max-width: 768px) {
+            body {
+                align-items: flex-start; /* Align card to top on mobile */
+            }
+            .register-card {
+                flex-direction: column;
+                height: auto;
+                max-width: 100%;
+                max-height: none; /* Allow card to grow */
+                width: 100%;
+                min-height: 0;
+            }
+            
+            .illustration-panel {
+                width: 100% !important;
+                height: 250px; /* Reduced height for mobile */
+            }
+
+            .shophub-logo {
+                top: 20px;
+                left: 20px;
+                gap: 10px;
+            }
+
+            .shophub-logo img {
+                width: 50px; /* Was 32px */
+                height: 50px; /* Was 32px */
+            }
+
+            .shophub-logo span {
+                font-size: 1.75rem; /* Was 1.25rem */
+            }
+
+            .circles-image-left {
+                /* REMOVED THIS ENTIRE RULE */
+            }
+            
+            .welcome-text {
+                font-size: 2.5rem;
+                bottom: 20px;
+                left: 20px;
+            }
+
+            .form-panel {
+                width: 100% !important;
+                padding: 2.5rem 1.5rem !important; /* Reduced padding for mobile */
+                max-height: none; /* Allow form to scroll if needed */
+                overflow-y: auto;
+            }
+        }
+
+        .error-message {
+            background-color: #fee2e2;
+            border: 1px solid #fecaca;
+            color: #991b1b;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            margin-top: 0.5rem;
+            font-size: 0.875rem;
+        }
+
+        .help-text {
+            font-size: 0.75rem;
+            color: #6b7280;
+            margin-top: 0.25rem;
+        }
+
+        .spinner {
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #fff; /* Changed to white */
+            border-radius: 50%;
+            width: 16px;
+            height: 16px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+            margin-right: 0.5rem;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Ensure images load properly */
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+    </style>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        'shophub-blue': '#2c3e50',
+                        'primary-btn': '#3452B3',
+                    }
                 }
-            });
+            }
+        }
+    </script>
+</head>
+<body>
+    <!-- Main Register Card Container -->
+    <div class="register-card bg-white rounded-[2rem]">
+        <!-- Left Side: Illustration and Welcome Message -->
+        <div class="illustration-panel text-white">
+            <!-- Logo and Brand Name at Top Left -->
+            <div class="shophub-logo">
+                <img 
+                    src="{% static 'images/logo.png' %}" 
+                    alt="Shophub Logo" 
+                    class="logo-img"
+                >
+                <span>Shophub</span>
+            </div>
+
+            <!-- Circles at Top Right -->
+            <!-- REMOVED: <img src="{% static 'images/circles.png' %}" alt="Decorative circles" class="circles-image-left"> -->
+
+            <!-- Welcome Text -->
+            <h1 class="welcome-text">Welcome!</h1>
+        </div>
+
+        <!-- Right Side: Registration Form -->
+        <div class="w-1/2 p-12 md:p-16 flex flex-col justify-center space-y-6 overflow-y-auto relative form-panel">
+            
+            <!-- Decorative circles (from image) -->
+            <img src="{% static 'images/circles.png' %}" alt="Decorative circles" class="w-32 h-auto mb-4"> <!-- Was w-16 -->
+            
+            <h2 class="text-4xl font-bold text-gray-800">Sign up</h2>
+
+            <!-- Error Messages -->
+            {% if form.non_field_errors %}
+                <div class="error-message">
+                    {% for error in form.non_field_errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <form method="post" class="space-y-5" id="registerForm" novalidate>
+                {% csrf_token %}
+                
+                <!-- Email Field -->
+                <div>
+                    <label for="{{ form.email.id_for_label }}" class="text-sm font-medium text-gray-700 block mb-2 opacity-80">
+                        <i data-lucide="mail" class="inline w-4 h-4 mr-1 text-gray-500"></i>
+                        Email
+                    </label>
+                    <input 
+                        type="email" 
+                        id="{{ form.email.id_for_label }}" 
+                        name="{{ form.email.name }}"
+                        value="{{ form.email.value|default:'' }}"
+                        placeholder="" 
+                        class="custom-input"
+                        autocomplete="email"
+                        required
+                    >
+                    {% if form.email.errors %}
+                        <div class="error-message">
+                            {{ form.email.errors|first }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Username Field -->
+                <div>
+                    <label for="{{ form.username.id_for_label }}" class="text-sm font-medium text-gray-700 block mb-2 opacity-80">
+                        <i data-lucide="user" class="inline w-4 h-4 mr-1 text-gray-500"></i>
+                        Username
+                    </label>
+                    <input 
+                        type="text" 
+                        id="{{ form.username.id_for_label }}" 
+                        name="{{ form.username.name }}"
+                        value="{{ form.username.value|default:'' }}"
+                        placeholder="" 
+                        class="custom-input"
+                        autocomplete="username"
+                        required
+                    >
+                    {% if form.username.errors %}
+                        <div class="error-message">
+                            {{ form.username.errors|first }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Full Name Field -->
+                <div>
+                    <label for="{{ form.full_name.id_for_label }}" class="text-sm font-medium text-gray-700 block mb-2 opacity-80">
+                        <i data-lucide="user-circle" class="inline w-4 h-4 mr-1 text-gray-500"></i>
+                        Full Name
+                    </label>
+                    <input 
+                        type="text" 
+                        id="{{ form.full_name.id_for_label }}" 
+                        name="{{ form.full_name.name }}"
+                        value="{{ form.full_name.value|default:'' }}"
+                        placeholder="" 
+                        class="custom-input"
+                        autocomplete="name"
+                        required
+                    >
+                    {% if form.full_name.errors %}
+                        <div class="error-message">
+                            {{ form.full_name.errors|first }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Role Field -->
+                <div class="relative">
+                    <label for="{{ form.role.id_for_label }}" class="text-sm font-medium text-gray-700 block mb-2 opacity-80">
+                        <i data-lucide="user-check" class="inline w-4 h-4 mr-1 text-gray-500"></i>
+                        Account Type
+                    </label>
+                    <select 
+                        id="{{ form.role.id_for_label }}" 
+                        name="{{ form.role.name }}"
+                        class="custom-select"
+                        required
+                    >
+                        {% for value, label in form.role.field.choices %}
+                            {% if value %}
+                                <option value="{{ value }}" {% if form.role.value == value %}selected{% endif %}>{{ label }}</option>
+                            {% endif %}
+                        {% endfor %}
+                    </select>
+                    {% if form.role.help_text %}
+                        <p class="help-text">{{ form.role.help_text }}</p>
+                    {% endif %}
+                    {% if form.role.errors %}
+                        <div class="error-message">
+                            {{ form.role.errors|first }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Password Field -->
+                <div>
+                    <label for="{{ form.password1.id_for_label }}" class="text-sm font-medium text-gray-700 block mb-2 opacity-80">
+                        <i data-lucide="lock" class="inline w-4 h-4 mr-1 text-gray-500"></i>
+                        Password
+                    </label>
+                    <div class="relative">
+                        <input 
+                            type="password" 
+                            id="{{ form.password1.id_for_label }}" 
+                            name="{{ form.password1.name }}"
+                            placeholder="" 
+                            class="custom-input"
+                            autocomplete="new-password"
+                            required
+                        >
+                        <i 
+                            data-lucide="eye-off" 
+                            class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 cursor-pointer hover:text-gray-600 transition duration-150" 
+                            id="togglePassword1Icon"
+                            onclick="togglePasswordVisibility('{{ form.password1.id_for_label }}', 'togglePassword1Icon')"
+                        ></i>
+                    </div>
+                    {% if form.password1.help_text %}
+                        <p class="help-text">{{ form.password1.help_text }}</p>
+                    {% endif %}
+                    {% if form.password1.errors %}
+                        <div class="error-message">
+                            {{ form.password1.errors|first }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Confirm Password Field -->
+                <div>
+                    <label for="{{ form.password2.id_for_label }}" class="text-sm font-medium text-gray-700 block mb-2 opacity-80">
+                        <i data-lucide="lock" class="inline w-4 h-4 mr-1 text-gray-500"></i>
+                        Confirm Password
+                    </label>
+                    <div class="relative">
+                        <input 
+                            type="password" 
+                            id="{{ form.password2.id_for_label }}" 
+                            name="{{ form.password2.name }}"
+                            placeholder="" 
+                            class="custom-input"
+                            autocomplete="new-password"
+                            required
+                        >
+                        <i 
+                            data-lucide="eye-off" 
+                            class="absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5 cursor-pointer hover:text-gray-600 transition duration-150" 
+                            id="togglePassword2Icon"
+                            onclick="togglePasswordVisibility('{{ form.password2.id_for_label }}', 'togglePassword2Icon')"
+                        ></i>
+                    </div>
+                    {% if form.password2.errors %}
+                        <div class="error-message">
+                            {{ form.password2.errors|first }}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- Primary Sign Up Button -->
+                <button 
+                    type="submit" 
+                    class="w-full primary-btn text-white font-semibold py-3 rounded-xl hover:bg-blue-800 transition duration-200 shadow-md shadow-blue-500/50 mt-6 flex items-center justify-center"
+                    id="submitBtn"
+                >
+                    <span class="spinner hidden" id="spinner"></span>
+                    <span id="buttonText">Create Account</span>
+                </button>
+
+                <!-- Separator -->
+                <div class="flex items-center justify-center space-x-3 text-gray-400 py-1">
+                    <hr class="flex-grow border-t border-gray-200">
+                    <span class="text-sm">Or</span>
+                    <hr class="flex-grow border-t border-gray-200">
+                </div>
+
+                <!-- Secondary Login Button (Updated Style) -->
+                <a 
+                    href="{% url 'accounts:login' %}" 
+                    class="w-full bg-gray-100 text-gray-800 font-semibold py-3 rounded-xl hover:bg-gray-200 transition duration-200 text-center block"
+                >
+                    Log in
+                </a>
+            </form>
+        </div>
+    </div>
+
+    <!-- Initialize Lucide Icons and add password toggle logic -->
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+
+        function togglePasswordVisibility(inputId, iconId) {
+            const passwordInput = document.getElementById(inputId);
+            const iconElement = document.getElementById(iconId);
+            
+            if (passwordInput && iconElement) {
+                const isPassword = passwordInput.type === 'password';
+                passwordInput.type = isPassword ? 'text' : 'password';
+                
+                // Update icon
+                iconElement.setAttribute('data-lucide', isPassword ? 'eye' : 'eye-off');
+                lucide.createIcons();
+            }
         }
 
         // Form Loading State
-        const registerForm = document.getElementById('registerForm');
-        const submitBtn = document.getElementById('submitBtn');
-        const spinner = document.getElementById('spinner');
-        const buttonText = document.getElementById('buttonText');
+        document.addEventListener('DOMContentLoaded', function() {
+            const registerForm = document.getElementById('registerForm');
+            const submitBtn = document.getElementById('submitBtn');
+            const spinner = document.getElementById('spinner');
+            const buttonText = document.getElementById('buttonText');
 
-        if (registerForm && submitBtn) {
-            registerForm.addEventListener('submit', function() {
-                // Disable submit button
-                submitBtn.disabled = true;
-                
-                // Show spinner
-                if (spinner) spinner.classList.remove('d-none');
-                
-                // Update button text
-                if (buttonText) {
-                    buttonText.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Creating Account...';
-                }
-            });
-        }
-    });
-</script>
-{% endblock %}
+            if (registerForm && submitBtn) {
+                registerForm.addEventListener('submit', function() {
+                    // Check basic HTML5 validation
+                    if (!registerForm.checkValidity()) {
+                        return;
+                    }
+
+                    // Disable submit button
+                    submitBtn.disabled = true;
+                    
+                    // Show spinner
+                    if (spinner) spinner.classList.remove('hidden');
+                    
+                    // Update button text
+                    if (buttonText) {
+                        buttonText.textContent = 'Creating Account...';
+                    }
+                });
+            }
+
+            // Verify images are loaded (optional - for debugging)
+            const logoImg = document.querySelector('.logo-img');
+            if (logoImg) {
+                logoImg.addEventListener('error', function() {
+                    console.warn('⚠️ Logo image failed to load - check path: {% static "images/logo.png" %}');
+                });
+            }
+
+            const circlesLeft = document.querySelector('.circles-image-left');
+            if (circlesLeft) {
+                circlesLeft.addEventListener('error', function() {
+                    console.warn('⚠️ Circles image (left) failed to load - check path: {% static "images/circles.png" %}');
+                });
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,27 @@
+{% extends 'emails/base_email.html' %}
+
+{% block subject %}New order received - {{ order.order_number }}{% endblock %}
+
+{% block content %}
+<span class="badge">New Order</span>
+<h2>Hello {{ seller.full_name|default:seller.email }},</h2>
+<p>You have a new order containing your products.</p>
+
+<table class="details-table">
+    <tr>
+        <th>Order number</th>
+        <td>{{ order.order_number }}</td>
+    </tr>
+    <tr>
+        <th>Placed at</th>
+        <td>{{ order.created_at|date:"M d, Y H:i" }}</td>
+    </tr>
+    <tr>
+        <th>Total value</th>
+        <td>EGP {{ order.total_amount|floatformat:2 }}</td>
+    </tr>
+</table>
+
+<a href="{{ seller_order_url }}" class="btn">Review Order</a>
+<p style="margin-top: 16px;">Log in to prepare the order, update its status, and add shipment details once ready.</p>
+{% endblock %}

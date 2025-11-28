@@ -1,0 +1,62 @@
+{% extends 'emails/base_email.html' %}
+
+{% block content %}
+<div style="max-width: 600px; margin: 0 auto; padding: 20px; font-family: Arial, sans-serif;">
+    <div style="text-align: center; margin-bottom: 30px;">
+        <h1 style="color: #28a745; margin: 0;">Payment Received!</h1>
+    </div>
+    
+    <div style="background: #d4edda; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #28a745;">
+        <p style="color: #333; font-size: 18px; margin: 0 0 10px 0;">
+            Hi {{ seller.full_name|default:seller.email }},
+        </p>
+        <p style="color: #666; font-size: 16px; line-height: 1.6; margin: 10px 0;">
+            Payment has been approved for order <strong>{{ order.order_number }}</strong>.
+        </p>
+        <p style="color: #666; font-size: 16px; line-height: 1.6; margin: 10px 0;">
+            The payment has been processed and you can now proceed with order fulfillment.
+        </p>
+    </div>
+    
+    {% if transaction %}
+    <div style="background: white; border: 1px solid #dee2e6; padding: 20px; border-radius: 8px; margin: 20px 0;">
+        <h3 style="color: #333; margin-top: 0;">Payment Summary</h3>
+        <table style="width: 100%; border-collapse: collapse;">
+            <tr>
+                <td style="padding: 8px 0; color: #666; font-size: 14px;">Gross Amount:</td>
+                <td style="text-align: right; padding: 8px 0; color: #333; font-size: 14px;">EGP {{ transaction.amount|floatformat:2 }}</td>
+            </tr>
+            {% if transaction.platform_fee > 0 %}
+            <tr>
+                <td style="padding: 8px 0; color: #666; font-size: 14px;">Platform Fee ({{ transaction.payment_summary.platform_fee_percent|default:"0" }}%):</td>
+                <td style="text-align: right; padding: 8px 0; color: #333; font-size: 14px;">-EGP {{ transaction.platform_fee|floatformat:2 }}</td>
+            </tr>
+            {% endif %}
+            {% if transaction.processing_fee > 0 %}
+            <tr>
+                <td style="padding: 8px 0; color: #666; font-size: 14px;">Processing Fee ({{ transaction.payment_summary.processing_fee_percent|default:"0" }}%):</td>
+                <td style="text-align: right; padding: 8px 0; color: #333; font-size: 14px;">-EGP {{ transaction.processing_fee|floatformat:2 }}</td>
+            </tr>
+            {% endif %}
+            <tr style="border-top: 2px solid #dee2e6;">
+                <td style="padding: 12px 0; color: #333; font-size: 16px; font-weight: bold;">Net Amount:</td>
+                <td style="text-align: right; padding: 12px 0; color: #28a745; font-size: 16px; font-weight: bold;">EGP {{ transaction.net_amount|floatformat:2 }}</td>
+            </tr>
+        </table>
+    </div>
+    {% endif %}
+    
+    <div style="text-align: center; margin: 30px 0;">
+        <a href="{{ seller_order_url }}" 
+           style="background: #28a745; color: white; padding: 12px 30px; text-decoration: none; border-radius: 5px; display: inline-block; font-weight: bold;">
+            View Order & Payment Details
+        </a>
+    </div>
+    
+    <p style="color: #999; font-size: 12px; text-align: center; margin-top: 30px;">
+        Thank you,<br>
+        Team Shop Hub
+    </p>
+</div>
+{% endblock %}
+

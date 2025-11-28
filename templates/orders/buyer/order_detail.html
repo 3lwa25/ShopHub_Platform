@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Order {{ order.order_number }} - Shop Hub{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0">Order #{{ order.order_number }}</h1>
+            <p class="text-muted mb-0">Placed on {{ order.created_at|date:"M d, Y H:i" }}</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a href="{% url 'orders:buyer_order_tracking' order.order_number %}" class="btn btn-outline-primary"><i class="fas fa-map-marker-alt"></i> Track Order</a>
+            <a href="{% url 'orders:buyer_orders' %}" class="btn btn-outline-secondary">Back to Orders</a>
+        </div>
+    </div>
+
+    <div class="row g-3">
+        <div class="col-lg-8">
+            <div class="card shadow-sm border-0 mb-3">
+                <div class="card-header bg-white border-0">
+                    <h2 class="h5 mb-0">Items</h2>
+                </div>
+                <div class="card-body p-0">
+                    <ul class="list-group list-group-flush">
+                        {% for item in order.items.all %}
+                            <li class="list-group-item d-flex">
+                                <div class="flex-shrink-0 me-3" style="width: 70px;">
+                                    {% if item.product and item.product.images.first %}
+                                        <img src="{{ item.product.images.first.image.url }}" class="img-fluid rounded" alt="{{ item.product_name }}">
+                                    {% else %}
+                                        <img src="{% static 'images/placeholder.png' %}" class="img-fluid rounded" alt="Placeholder">
+                                    {% endif %}
+                                </div>
+                                <div class="flex-grow-1">
+                                    <div class="fw-semibold">{{ item.product_name }}</div>
+                                    <div class="small text-muted">SKU: {{ item.product_sku }}</div>
+                                    <div class="small text-muted">Seller: {{ item.seller.user.full_name }}</div>
+                                </div>
+                                <div class="text-end">
+                                    <div>EGP {{ item.unit_price|floatformat:2 }}</div>
+                                    <div class="small text-muted">Qty: {{ item.quantity }}</div>
+                                    <div class="fw-semibold">Subtotal: EGP {{ item.subtotal|floatformat:2 }}</div>
+                                    {% if order.status == 'DELIVERED' and item.product and user.is_authenticated %}
+                                        {% if item.user_review %}
+                                            <a href="{% url 'reviews:edit_review' item.user_review.id %}" class="btn btn-sm btn-outline-secondary mt-2">
+                                                <i class="fas fa-edit"></i> Edit Review
+                                            </a>
+                                        {% else %}
+                                            <a href="{% url 'reviews:write_review' item.id %}" class="btn btn-sm btn-outline-primary mt-2">
+                                                <i class="fas fa-star"></i> Write Review
+                                            </a>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="col-lg-4">
+            <div class="card shadow-sm border-0 mb-3">
+                <div class="card-header bg-white border-0">
+                    <h2 class="h5 mb-0">Order Status</h2>
+                </div>
+                <div class="card-body">
+                    <p class="fw-semibold mb-1">Current status</p>
+                    {% if order.status == 'PENDING_PAYMENT' %}
+                        <span class="badge bg-warning text-dark">Pending Payment</span>
+                    {% elif order.status == 'PAID' %}
+                        <span class="badge bg-success">Paid</span>
+                    {% else %}
+                        <span class="badge bg-secondary">{{ order.get_status_display }}</span>
+                    {% endif %}
+                    <hr>
+                    <p class="fw-semibold mb-1">Payment</p>
+                    <div class="small text-muted mb-1">Method: {{ order.payment_method|title|default:"Not specified" }}</div>
+                    {% if order.payment_status == 'pending' %}
+                        <div class="small">
+                            <span class="badge bg-warning text-dark">Pending Approval</span>
+                            <div class="text-muted mt-1" style="font-size: 0.75rem;">Waiting for seller confirmation</div>
+                        </div>
+                    {% elif order.payment_status == 'completed' %}
+                        <div class="small">
+                            <span class="badge bg-success">Approved Payment</span>
+                            {% if invoice and invoice.paid_at %}
+                                <div class="text-muted mt-1" style="font-size: 0.75rem;">Approved on {{ invoice.paid_at|date:"M d, Y H:i" }}</div>
+                            {% endif %}
+                        </div>
+                    {% else %}
+                        <div class="small text-muted">Status: {{ order.get_payment_status_display|default:order.payment_status }}</div>
+                    {% endif %}
+                    <hr>
+                    <p class="fw-semibold mb-1">Total</p>
+                    <div class="h4 mb-0">EGP {{ order.total_amount|floatformat:2 }}</div>
+                    {% if invoice %}
+                        <hr>
+                        <p class="fw-semibold mb-1">Documents</p>
+                        <a href="{% url 'orders:invoice_download' order.order_number %}" class="btn btn-outline-primary btn-sm w-100">
+                            <i class="fas fa-file-invoice me-1"></i> Download Invoice (PDF)
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white border-0">
+                    <h2 class="h5 mb-0">Shipping Address</h2>
+                </div>
+                <div class="card-body">
+                    <p class="mb-0">{{ order.shipping_address.full_name }}</p>
+                    <p class="mb-0">{{ order.shipping_address.address_line1 }}</p>
+                    {% if order.shipping_address.address_line2 %}<p class="mb-0">{{ order.shipping_address.address_line2 }}</p>{% endif %}
+                    <p class="mb-0">{{ order.shipping_address.city }}, {{ order.shipping_address.state }}</p>
+                    <p class="mb-0">{{ order.shipping_address.country }} - {{ order.shipping_address.postal_code }}</p>
+                    <p class="mb-0">Phone: {{ order.shipping_address.phone }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

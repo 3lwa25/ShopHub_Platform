@@ -1,0 +1,32 @@
+{% extends 'emails/base_email.html' %}
+
+{% block subject %}Refund requested - {{ order.order_number }}{% endblock %}
+
+{% block content %}
+<span class="badge">Support Action Required</span>
+<h2>Refund request received</h2>
+<p>The buyer has submitted a refund request for order <strong>{{ order.order_number }}</strong>.</p>
+
+<table class="details-table">
+    <tr>
+        <th>Buyer</th>
+        <td>{{ buyer.full_name|default:buyer.email }}</td>
+    </tr>
+    <tr>
+        <th>Email</th>
+        <td>{{ buyer.email }}</td>
+    </tr>
+    <tr>
+        <th>Requested amount</th>
+        <td>EGP {{ amount|floatformat:2 }}</td>
+    </tr>
+</table>
+
+<div style="background-color: #fff7ed; border-radius: 8px; padding: 16px; border: 1px solid #fed7aa; margin-top: 16px;">
+    <strong>Reason provided:</strong>
+    <p style="margin: 8px 0 0 0;">{{ reason }}</p>
+</div>
+
+<p style="margin-top: 16px;">View the order details and follow up with the buyer.</p>
+<a href="{{ order_detail_url }}" class="btn">Review Order</a>
+{% endblock %}

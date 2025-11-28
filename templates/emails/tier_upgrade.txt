@@ -1,0 +1,44 @@
+Tier Upgraded!
+
+Hi {{ user.get_full_name|default:user.email }},
+
+Congratulations! You've been upgraded from {{ old_tier|title }} to {{ new_tier|title }} Tier!
+
+{% if new_tier == 'platinum' %}💎 PLATINUM TIER{% elif new_tier == 'gold' %}🥇 GOLD TIER{% elif new_tier == 'silver' %}🥈 SILVER TIER{% else %}🥉 BRONZE TIER{% endif %}
+
+Your New Benefits:
+------------------
+{% if new_tier == 'platinum' %}
+- Earn 3 points per EGP spent
+- Personal shopping assistant
+- 15% exclusive discounts
+- First access to limited editions
+- Complimentary gift wrapping
+- VIP event invitations
+- Priority everything
+{% elif new_tier == 'gold' %}
+- Earn 2 points per EGP spent
+- Free shipping on all orders
+- 10% exclusive discounts
+- VIP customer support
+- Special birthday gifts
+{% elif new_tier == 'silver' %}
+- Earn 1.5 points per EGP spent
+- Priority customer support
+- 5% exclusive discounts
+- Early access to new products
+{% else %}
+- Earn 1 point per EGP spent
+- Basic customer support
+- Birthday rewards
+{% endif %}
+
+Thank you for being a loyal customer! Your {{ new_tier|title }} tier benefits are now active and ready to use.
+
+View all tier benefits: {{ request.get_host }}{% url 'rewards:tier_info' %}
+
+Keep earning points to maintain your tier and unlock even more exclusive benefits!
+
+---
+Shop Hub - Your Rewards Partner
+

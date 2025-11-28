@@ -1,0 +1,24 @@
+{% extends 'emails/base_email.html' %}
+
+{% block subject %}Seller account update{% endblock %}
+
+{% block content %}
+<span class="badge">Seller Account Update</span>
+<h2>Hello {{ user.full_name|default:user.email }},</h2>
+<p>Your seller account status has been updated by the Shop Hub team.</p>
+
+<ul style="padding-left: 20px; margin: 16px 0;">
+    <li><strong>Approval status:</strong> {% if is_approved %}Approved ✅{% else %}Pending / Rejected ❌{% endif %}</li>
+    <li><strong>Verification badge:</strong> {% if is_verified %}Verified seller ⭐{% else %}Not verified{% endif %}</li>
+</ul>
+
+{% if reason %}
+    <div style="background-color: #f9fafb; border-radius: 8px; padding: 16px; border: 1px solid #e5e7eb;">
+        <strong>Message from the moderation team:</strong>
+        <p style="margin: 8px 0 0 0;">{{ reason }}</p>
+    </div>
+{% endif %}
+
+<p style="margin-top: 16px;">Sign in to your dashboard to review your store information, manage products, and continue serving your customers.</p>
+<a href="{{ site_url }}/accounts/seller/dashboard/" class="btn">Go to Seller Dashboard</a>
+{% endblock %}

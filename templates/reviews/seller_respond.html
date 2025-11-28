@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+
+{% block title %}Respond to Review - {{ product.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-body">
+                    <h5 class="mb-3">Review Details</h5>
+                    <div class="mb-2">
+                        <strong>{{ review.title }}</strong>
+                        <div class="mb-2">
+                            {% for i in "12345" %}
+                                {% if forloop.counter <= review.rating %}
+                                    <i class="fas fa-star text-warning"></i>
+                                {% else %}
+                                    <i class="far fa-star text-muted"></i>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                        <p class="text-muted">{{ review.body }}</p>
+                        <small class="text-muted">By {{ review.buyer.full_name|default:review.buyer.email }} on {{ review.created_at|date:"M d, Y" }}</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="mb-0">Your Response</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+                        {{ form.response.label_tag }}
+                        {{ form.response }}
+                        {% if form.response.errors %}
+                            <div class="text-danger small">{{ form.response.errors }}</div>
+                        {% endif %}
+                        <small class="text-muted d-block mt-1">Your response will be visible to all customers viewing this review.</small>
+                        
+                        <div class="mt-4 d-flex justify-content-between">
+                            <a href="{% url 'reviews:product_reviews' product.id %}" class="btn btn-outline-secondary">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Post Response</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,123 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Manage Orders - Admin{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1 class="h2"><i class="fas fa-shopping-cart"></i> Manage Orders</h1>
+        </div>
+        <div class="col-md-4 text-end">
+            <a href="{% url 'accounts:admin_dashboard' %}" class="btn btn-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Dashboard
+            </a>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" class="row g-3">
+                <div class="col-md-4">
+                    <input type="text" name="search" class="form-control" placeholder="Search by order number, email..." value="{{ search }}">
+                </div>
+                <div class="col-md-3">
+                    <select name="status" class="form-select">
+                        <option value="">All Status</option>
+                        <option value="pending" {% if status_filter == 'pending' %}selected{% endif %}>Pending</option>
+                        <option value="processing" {% if status_filter == 'processing' %}selected{% endif %}>Processing</option>
+                        <option value="shipped" {% if status_filter == 'shipped' %}selected{% endif %}>Shipped</option>
+                        <option value="delivered" {% if status_filter == 'delivered' %}selected{% endif %}>Delivered</option>
+                        <option value="cancelled" {% if status_filter == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="fas fa-search"></i> Search
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Orders Table -->
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Order #</th>
+                            <th>Customer</th>
+                            <th>Items</th>
+                            <th>Total Amount</th>
+                            <th>Payment</th>
+                            <th>Status</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for order in orders %}
+                        <tr>
+                            <td>
+                                <strong>{{ order.order_number }}</strong>
+                            </td>
+                            <td>
+                                {{ order.buyer.email }}<br>
+                                <small class="text-muted">{{ order.buyer.full_name }}</small>
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary">{{ order.items.count }} items</span>
+                            </td>
+                            <td>
+                                <strong>EGP {{ order.total_amount }}</strong>
+                            </td>
+                            <td>
+                                <span class="badge bg-{{ order.payment_status }}">
+                                    {{ order.get_payment_status_display }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge bg-status-{{ order.status }}">
+                                    {{ order.get_status_display }}
+                                </span>
+                            </td>
+                            <td>{{ order.created_at|date:"M d, Y H:i" }}</td>
+                            <td>
+                                <a href="{% url 'orders:buyer_order_detail' order.order_number %}" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-eye"></i> View
+                                </a>
+                                <a href="/admin/orders/order/{{ order.id }}/change/" class="btn btn-sm btn-info" target="_blank">
+                                    <i class="fas fa-cog"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="8" class="text-center">No orders found</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.badge.bg-pending { background-color: #ffc107 !important; }
+.badge.bg-paid { background-color: #28a745 !important; }
+.badge.bg-failed { background-color: #dc3545 !important; }
+.badge.bg-refunded { background-color: #6c757d !important; }
+
+.badge.bg-status-pending { background-color: #ffc107 !important; }
+.badge.bg-status-processing { background-color: #17a2b8 !important; }
+.badge.bg-status-shipped { background-color: #007bff !important; }
+.badge.bg-status-delivered { background-color: #28a745 !important; }
+.badge.bg-status-cancelled { background-color: #dc3545 !important; }
+</style>
+{% endblock %}
+

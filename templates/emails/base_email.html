@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block subject %}Shop Hub Notification{% endblock %}</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #f5f7fb;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            color: #1f2933;
+        }
+        .email-container {
+            max-width: 640px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
+        }
+        .header {
+            background: linear-gradient(135deg, #4338ca, #3b82f6);
+            padding: 24px 32px;
+            color: #ffffff;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        .content {
+            padding: 32px;
+            line-height: 1.6;
+            font-size: 15px;
+        }
+        .content h2 {
+            color: #111827;
+            font-size: 20px;
+            margin-bottom: 16px;
+        }
+        .content p {
+            margin: 0 0 12px 0;
+        }
+        .btn {
+            display: inline-block;
+            background-color: #3b82f6;
+            color: #ffffff !important;
+            text-decoration: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            margin: 16px 0;
+        }
+        .badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 9999px;
+            background-color: #e0e7ff;
+            color: #4338ca;
+            font-weight: 600;
+            font-size: 13px;
+            margin-bottom: 12px;
+        }
+        .details-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+        }
+        .details-table th,
+        .details-table td {
+            text-align: left;
+            padding: 10px 12px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .footer {
+            padding: 20px 32px;
+            font-size: 13px;
+            color: #6b7280;
+            background-color: #f9fafb;
+            text-align: center;
+        }
+        @media (max-width: 600px) {
+            .content, .header, .footer {
+                padding-left: 20px;
+                padding-right: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div style="padding: 32px 16px;">
+        <div class="email-container">
+            <div class="header">
+                <h1>Shop Hub</h1>
+                <p style="margin: 4px 0 0 0; font-size: 14px; opacity: 0.85;">Marketplace notifications</p>
+            </div>
+            <div class="content">
+                {% block content %}{% endblock %}
+                <p style="margin-top: 24px; font-size: 14px;">If you need help, reply to this email or contact <a href="mailto:{{ support_email }}" style="color: #2563eb;">{{ support_email }}</a>.</p>
+            </div>
+            <div class="footer">
+                <p>&copy; {{ now|date:"Y" }} Shop Hub. All rights reserved.</p>
+                <p>Sent to {{ recipient_email|default:"your registered email" }}</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
